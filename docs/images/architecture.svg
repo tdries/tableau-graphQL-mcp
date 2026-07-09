@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 500" width="1160" height="500" font-family="'Segoe UI',Helvetica,Arial,sans-serif" role="img" aria-label="Architecture diagram">
+  <defs>
+    <linearGradient id="hero" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00696E"/><stop offset="1" stop-color="#00575B"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#006EFF"/>
+    </marker>
+    <style>
+      .card{fill:#fff;stroke:#DCE4E1;stroke-width:1.5}
+      .h{font-size:19px;font-weight:600;fill:#00375A}
+      .s{font-size:13px;fill:#5C6B67}
+      .lbl{font-size:12.5px;font-weight:600;fill:#006EFF}
+      .lbls{font-size:11px;fill:#5C6B67}
+      .eyebrow{font-size:11px;font-weight:600;letter-spacing:2px;fill:#8AA0AB}
+      .tool{font-size:12px;font-weight:500;fill:#EAFBF3;font-family:'JetBrains Mono',ui-monospace,monospace}
+    </style>
+  </defs>
+
+  <rect width="1160" height="500" fill="#F8FAFC"/>
+  <text x="40" y="46" class="eyebrow">HOW IT WORKS</text>
+  <text x="40" y="74" font-size="24" font-weight="600" fill="#0042FF">Local MCP server to the Tableau Metadata API</text>
+
+  <!-- 1. MCP client -->
+  <g>
+    <rect x="40" y="120" width="230" height="150" rx="14" class="card"/>
+    <rect x="40" y="120" width="230" height="46" rx="14" fill="#00375A"/>
+    <rect x="40" y="150" width="230" height="16" fill="#00375A"/>
+    <text x="60" y="149" font-size="17" font-weight="600" fill="#fff">MCP client</text>
+    <text x="60" y="196" class="s">Claude Desktop</text>
+    <text x="60" y="218" class="s">Claude Code</text>
+    <text x="60" y="240" class="s">Cursor · Cline · Windsurf</text>
+  </g>
+
+  <!-- 2. the server (hero) -->
+  <g>
+    <rect x="365" y="96" width="290" height="308" rx="16" fill="url(#hero)"/>
+    <text x="386" y="132" font-size="18" font-weight="600" fill="#fff">tableau-graphql-mcp</text>
+    <text x="386" y="154" font-size="12.5" fill="#BEEBE4">FastMCP · Python · stdlib only</text>
+    <text x="386" y="176" font-size="11" font-weight="600" letter-spacing="1.5" fill="#64FA8C">TOOLS</text>
+    <g>
+      <rect x="386" y="184" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="204" class="tool">graphql_query</text>
+      <rect x="386" y="220" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="240" class="tool">introspect_schema</text>
+      <rect x="386" y="256" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="276" class="tool">lineage_examples</text>
+      <rect x="386" y="292" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="312" class="tool">where_used</text>
+      <rect x="386" y="328" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="348" class="tool">search_content</text>
+      <rect x="386" y="364" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="384" class="tool">server_info</text>
+    </g>
+  </g>
+
+  <!-- 3. Metadata API -->
+  <g>
+    <rect x="750" y="120" width="180" height="150" rx="14" class="card"/>
+    <text x="770" y="150" class="h">Metadata API</text>
+    <text x="770" y="176" class="s">GraphQL endpoint</text>
+    <rect x="770" y="190" width="142" height="26" rx="6" fill="#E5F1FF"/>
+    <text x="778" y="207" font-size="11" fill="#006EFF" font-family="'JetBrains Mono',ui-monospace,monospace">/api/metadata/graphql</text>
+    <text x="770" y="240" class="lbls">auto-detects the endpoint</text>
+  </g>
+
+  <!-- 4. Tableau -->
+  <g>
+    <rect x="985" y="120" width="140" height="150" rx="14" class="card"/>
+    <text x="1005" y="150" class="h">Tableau</text>
+    <text x="1005" y="176" class="s">Server</text>
+    <text x="1005" y="197" class="s">or Cloud</text>
+    <text x="1005" y="232" class="lbls">workbooks · fields</text>
+    <text x="1005" y="249" class="lbls">tables · columns</text>
+  </g>
+
+  <!-- arrows -->
+  <line x1="272" y1="195" x2="360" y2="220" stroke="#006EFF" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="658" y1="220" x2="746" y2="195" stroke="#006EFF" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="932" y1="195" x2="981" y2="195" stroke="#006EFF" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- arrow labels -->
+  <text x="316" y="150" text-anchor="middle" class="lbl">stdio</text>
+  <text x="316" y="166" text-anchor="middle" class="lbls">JSON-RPC (MCP)</text>
+  <text x="702" y="150" text-anchor="middle" class="lbl">HTTPS</text>
+  <text x="702" y="166" text-anchor="middle" class="lbls">PAT to X-Tableau-Auth</text>
+
+  <text x="40" y="446" class="s">Runs locally over stdio. No inbound port. Read-only. Secrets from environment only.</text>
+  <text x="40" y="470" class="s">Auth: Personal Access Token (Server + Cloud), REST version + GraphQL endpoint auto-detected, token auto-refreshed.</text>
+</svg>

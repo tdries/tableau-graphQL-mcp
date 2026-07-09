@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tableau-graphql-mcp"
+dynamic = ["version"]
+description = "Ask any Tableau lineage question, in any MCP client, through the Tableau Metadata API (GraphQL)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Tim Dries", email = "tim.dries@biztory.be" }]
+keywords = [
+    "mcp", "model-context-protocol", "tableau", "metadata-api", "graphql",
+    "data-lineage", "llm", "claude", "ai-agents",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Database :: Front-Ends",
+]
+dependencies = [
+    "mcp>=1.2.0",   # official MCP SDK (bundles FastMCP + pydantic). No other runtime deps: stdlib urllib for HTTP.
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+tableau-graphql-mcp = "tableau_graphql_mcp.server:main"
+
+[project.urls]
+Homepage = "https://github.com/tdries/tableau-graphQL-mcp"
+Repository = "https://github.com/tdries/tableau-graphQL-mcp"
+Issues = "https://github.com/tdries/tableau-graphQL-mcp/issues"
+Changelog = "https://github.com/tdries/tableau-graphQL-mcp/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "src/tableau_graphql_mcp/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tableau_graphql_mcp"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+# Long lines are intentional here: embedded GraphQL queries and the schema cheat-sheet.
+# `ruff format` keeps actual code layout tidy.
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
