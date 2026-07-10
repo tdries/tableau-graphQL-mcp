@@ -34,17 +34,18 @@
 
   <!-- 2. the server (hero) -->
   <g>
-    <rect x="365" y="96" width="290" height="308" rx="16" fill="url(#hero)"/>
-    <text x="386" y="132" font-size="18" font-weight="600" fill="#fff">tableau-graphql-mcp</text>
-    <text x="386" y="154" font-size="12.5" fill="#BEEBE4">FastMCP · Python · stdlib only</text>
-    <text x="386" y="176" font-size="11" font-weight="600" letter-spacing="1.5" fill="#64FA8C">TOOLS</text>
+    <rect x="365" y="86" width="290" height="336" rx="16" fill="url(#hero)"/>
+    <text x="386" y="120" font-size="18" font-weight="600" fill="#fff">tableau-graphql-mcp</text>
+    <text x="386" y="142" font-size="12.5" fill="#BEEBE4">FastMCP · Python · stdlib only</text>
+    <text x="386" y="164" font-size="11" font-weight="600" letter-spacing="1.5" fill="#64FA8C">TOOLS</text>
     <g>
-      <rect x="386" y="184" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="204" class="tool">graphql_query</text>
-      <rect x="386" y="220" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="240" class="tool">introspect_schema</text>
-      <rect x="386" y="256" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="276" class="tool">lineage_examples</text>
-      <rect x="386" y="292" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="312" class="tool">where_used</text>
-      <rect x="386" y="328" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="348" class="tool">search_content</text>
-      <rect x="386" y="364" width="248" height="30" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="384" class="tool">server_info</text>
+      <rect x="386" y="172" width="248" height="27" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="190" class="tool">graphql_query</text>
+      <rect x="386" y="205" width="248" height="27" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="223" class="tool">introspect_schema</text>
+      <rect x="386" y="238" width="248" height="27" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="256" class="tool">lineage_examples</text>
+      <rect x="386" y="271" width="248" height="27" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="289" class="tool">where_used</text>
+      <rect x="386" y="304" width="248" height="27" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="322" class="tool">impact_analysis</text>
+      <rect x="386" y="337" width="248" height="27" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="355" class="tool">search_content</text>
+      <rect x="386" y="370" width="248" height="27" rx="8" fill="#ffffff" opacity="0.12"/><text x="400" y="388" class="tool">server_info</text>
     </g>
   </g>
 

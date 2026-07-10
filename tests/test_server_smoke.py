@@ -3,8 +3,17 @@ import pytest
 
 def test_import_and_tools_present():
     from tableau_graphql_mcp import server
-    for name in ("graphql_query", "introspect_schema", "lineage_examples", "where_used", "server_info"):
+    for name in ("graphql_query", "introspect_schema", "lineage_examples", "where_used",
+                 "impact_analysis", "search_content", "server_info"):
         assert callable(getattr(server, name))
+
+
+def test_partial_results_warning():
+    from tableau_graphql_mcp.server import _partial_results_warning
+    assert _partial_results_warning({"errors": [{"extensions": {"code": "NODE_LIMIT_EXCEEDED"}}]})
+    assert _partial_results_warning({"errors": [{"message": "MAX_PAGE_SIZE_EXCEEDED: clamped"}]})
+    assert _partial_results_warning({"data": {"x": 1}}) is None
+    assert _partial_results_warning({"errors": [{"extensions": {"code": "SOMETHING_ELSE"}}]}) is None
 
 
 def test_client_requires_env(monkeypatch):

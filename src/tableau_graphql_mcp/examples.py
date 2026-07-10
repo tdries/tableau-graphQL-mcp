@@ -252,7 +252,7 @@ EXAMPLES: list[dict[str, str]] = [
   }
 }""",
         "variables": '{ "name": "SALES" }',
-        "notes": "referencedByFields returns all field types; keep __typename == CalculatedField client-side. Core lineage, no Catalog.",
+        "notes": "referencedByFields is ONE hop (direct consumers). For the full transitive downstream chain (calc-of-a-calc), use the impact_analysis tool, which walks it for you.",
     },
     {
         "category": "calc",

@@ -5,29 +5,39 @@ from tableau_graphql_mcp.search import search_content
 
 
 class PagedClient:
-    """Two pages of workbooks so paging + substring match are exercised (only 'workbook' is searched)."""
+    """Serves the exact-match query, then two connection pages (only 'workbook' searched)."""
 
     def __init__(self):
-        self.calls = 0
+        self.page = 0
 
     def graphql(self, query, variables=None):
-        self.calls += 1
-        if self.calls == 1:
+        if "Connection(" not in query:  # exact-match fast path
+            return {"data": {"workbooks": [
+                {"name": "Sales Overview", "projectName": "Analytics", "owner": {"username": "jane.doe"}}]}}
+        self.page += 1
+        if self.page == 1:
             return {"data": {"workbooksConnection": {
                 "nodes": [{"name": "Sales Overview", "projectName": "Analytics", "owner": {"username": "jane.doe"}},
                           {"name": "HR Report", "projectName": "People", "owner": {"username": "x"}}],
-                "pageInfo": {"hasNextPage": True, "endCursor": "c1"}}}}
+                "pageInfo": {"hasNextPage": True, "endCursor": "c1"}, "totalCount": 3}}}
         return {"data": {"workbooksConnection": {
             "nodes": [{"name": "Regional Sales", "projectName": "Analytics", "owner": {"username": "jane.doe"}}],
-            "pageInfo": {"hasNextPage": False}}}}
+            "pageInfo": {"hasNextPage": False}, "totalCount": 3}}}
 
 
-def test_substring_match_across_pages():
+def test_exact_and_substring_across_pages():
     out = search_content(PagedClient(), "sales", types=["workbook"])
-    names = {m["name"] for m in out["matches"]["workbook"]}
-    assert names == {"Sales Overview", "Regional Sales"}   # both pages, case-insensitive
-    assert "HR Report" not in names
+    hits = out["matches"]["workbook"]
+    names = {h["name"] for h in hits}
+    assert names == {"Sales Overview", "Regional Sales"}      # both pages, case-insensitive
+    assert {h["name"] for h in hits if h["exact"]} == {"Sales Overview"}   # exact fast path flagged
     assert out["summary"]["workbook"] == 2
+
+
+def test_coverage_reported():
+    out = search_content(PagedClient(), "sales", types=["workbook"])
+    cov = out["coverage"]["workbook"]
+    assert cov["total"] == 3 and cov["scanned"] == 3 and cov["substring_complete"] is True
 
 
 def test_unknown_type_raises():

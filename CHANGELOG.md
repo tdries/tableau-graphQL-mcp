@@ -8,9 +8,18 @@ API**: renaming a tool or a required argument is a MAJOR change.
 ## [Unreleased]
 
 ### Added
+- `impact_analysis` tool: full transitive **multi-hop** downstream blast radius of a column,
+  field, or table (every dependent field, plus affected sheets, dashboards, workbooks, and the
+  de-duplicated owners to notify) — no longer leaves the recursion to the model.
 - `search_content` tool: case-insensitive **substring** search across workbooks, datasources,
   tables (and optionally fields/columns), since the Metadata API filters are exact-match only.
 - Read-only enforcement: `graphql_query` rejects `mutation`/`subscription` operations.
+
+### Changed
+- `graphql_query` flags `partial_results: true` with a `warning` when a query hits the
+  ~20,000-node limit, instead of passing the truncation through silently.
+- `search_content` adds an exact-match fast path (complete, instant) and reports per-type
+  `scanned`/`total` coverage so partial substring scans are explicit.
 
 ## [0.1.0] - 2026-07-09
 

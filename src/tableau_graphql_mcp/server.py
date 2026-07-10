@@ -16,6 +16,7 @@ from mcp.server.fastmcp import FastMCP
 from .client import TableauClient, TableauError
 from .config import Settings
 from .examples import CATEGORIES, EXAMPLES, SCHEMA_CHEATSHEET
+from .impact import impact_analysis as _impact_analysis
 from .lineage import where_used as _where_used
 from .search import search_content as _search_content
 
@@ -51,6 +52,23 @@ def _is_write(query: str) -> bool:
     return bool(_WRITE_OP.search(q))
 
 
+def _partial_results_warning(resp: dict) -> str | None:
+    """Turn the Metadata API's partial-result errors into a loud, structured warning.
+
+    The API returns partial `data` PLUS a NODE_LIMIT_EXCEEDED / MAX_PAGE_SIZE_EXCEEDED entry
+    in `errors`; the model can miss that, so surface it as a top-level flag."""
+    for e in resp.get("errors") or []:
+        code = str((e.get("extensions") or {}).get("code") or "") + " " + str(e.get("message", ""))
+        if "NODE_LIMIT" in code:
+            return ("PARTIAL RESULTS: the query exceeded the ~20,000-node limit and Tableau returned only "
+                    "part of the graph. Do NOT treat this as complete. Narrow the filter, select fewer nested "
+                    "fields, or page the outer connection with first/after (or use where_used / search_content / "
+                    "impact_analysis, which page and bound results for you).")
+        if "MAX_PAGE_SIZE" in code:
+            return "Page size was clamped to 1000 (MAX_PAGE_SIZE_EXCEEDED); request first:1000 and page with after."
+    return None
+
+
 @mcp.tool()
 def graphql_query(query: str, variables: dict | None = None) -> dict:
     """Run ANY read-only GraphQL query against the Tableau Metadata API. This is the
@@ -77,14 +95,21 @@ def graphql_query(query: str, variables: dict | None = None) -> dict:
     flows, tableauUsers, dataQualityWarnings. Call `lineage_examples` for ready-made query templates
     and a schema cheat-sheet, or `introspect_schema` to inspect any type's exact fields.
 
-    Read-only: mutation and subscription operations are rejected.
+    Read-only: mutation and subscription operations are rejected. If a query exceeds the
+    ~20,000-node limit, the response is flagged with `partial_results: true` and a `warning`
+    (it does NOT auto-page an arbitrary query) so you never mistake a truncated result for a
+    complete one.
     """
     if _is_write(query):
         raise TableauError(
             "This server is read-only: mutation and subscription operations are not allowed "
             "(the Tableau Metadata API is query-only)."
         )
-    return client().graphql(query, variables)
+    resp = client().graphql(query, variables)
+    warning = _partial_results_warning(resp)
+    if warning:
+        return {**resp, "partial_results": True, "warning": warning}
+    return resp
 
 
 @mcp.tool()
@@ -143,6 +168,26 @@ def where_used(names: list[str]) -> dict:
     if not names:
         raise TableauError("Provide at least one exact name to look up.")
     return _where_used(client(), names)
+
+
+@mcp.tool()
+def impact_analysis(name: str) -> dict:
+    """Full transitive (MULTI-HOP) downstream impact of a column, field, or table. Returns every
+    field that directly OR indirectly depends on it, and all affected sheets, dashboards,
+    workbooks, plus the de-duplicated set of OWNERS to notify before a change.
+
+    This is the "what breaks if I change/drop this?" tool. Unlike `where_used` (one core-lineage
+    hop), it follows the whole dependency chain — a calc built on a calc built on the column is
+    included. `name` is exact and case-sensitive. Workbooks are derived from downstream
+    sheets/dashboards (the flat downstreamWorkbooks edge is unreliable). If it returns nothing on a
+    site without Data Management, the transitive lineage may not be indexed there — use `where_used`
+    for the direct references.
+    """
+    if isinstance(name, str):
+        name = name.strip()
+    if not name:
+        raise TableauError("Provide an exact column, field, or table name.")
+    return _impact_analysis(client(), name)
 
 
 @mcp.tool()

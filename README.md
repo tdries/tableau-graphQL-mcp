@@ -32,12 +32,14 @@
 - _"Which calculated fields reference `Profit`, and on which dashboards?"_
 - _"Who should I notify before changing the `DIM_CUSTOMER` table?"_
 
-It ships **six curated tools**: a universal GraphQL passthrough, live schema introspection, an embedded library of correct query templates, a robust `where_used` resolver, a substring content search, and a connection probe. Together they let the model answer *any* lineage question, not just a fixed menu.
+It ships **seven curated tools**: a universal GraphQL passthrough, live schema introspection, an embedded library of correct query templates, a robust `where_used` resolver, a multi-hop `impact_analysis`, a substring content search, and a connection probe. Together they let the model answer *any* lineage question, not just a fixed menu.
 
 ### Why it's different
 - **Any question, done right.** `graphql_query` runs any read-only GraphQL; `introspect_schema` and a built-in cheat-sheet plus 28 worked examples keep the model's queries correct.
+- **True impact analysis (multi-hop).** `impact_analysis` follows the *whole* dependency chain — a calc built on a calc built on a column is included — and returns the full blast radius plus the de-duplicated **owners to notify**, not just direct references.
 - **Works everywhere.** Tableau **Server** *and* **Cloud**. The REST API version and the GraphQL endpoint (`/api/metadata/graphql`, with a `/relationship-service-war/graphql` fallback) are **auto-detected**.
 - **Robust lineage without Catalog.** `where_used` resolves workbooks via core lineage (`referencedByFields -> sheets -> workbook`), so it works even when the Data Management add-on's `downstreamWorkbooks` is empty.
+- **No silent truncation.** `graphql_query` flags `partial_results` when a query hits the node limit, and `search_content` reports `scanned`/`total` coverage — so a truncated answer is never mistaken for a complete one.
 - **Tiny and safe.** Read-only, stdio-only (no inbound port), secrets from env only, and **no dependencies beyond the MCP SDK** (stdlib `urllib` for HTTP).
 
 ## Quickstart
@@ -120,8 +122,9 @@ On Windows, if `uvx` isn't found by the GUI app, use its absolute path (e.g. `%U
 | `graphql_query` | Run **any** read-only Metadata API GraphQL query. The general tool for any lineage question. | `query`, `variables` |
 | `introspect_schema` | Live schema introspection: list entry points, or a type's exact fields. | `type_name` |
 | `lineage_examples` | A schema cheat-sheet plus 28 curated question-to-GraphQL templates (8 categories). | `category` |
-| `where_used` | Which workbooks/datasources use given column / field / table names (robust core-lineage resolution). | `names` |
-| `search_content` | Find content whose **name contains** a term (case-insensitive substring), across workbooks, datasources, tables (and optionally fields/columns). | `term`, `types` |
+| `where_used` | Which workbooks/datasources use given column / field / table names (robust one-hop core-lineage resolution). | `names` |
+| `impact_analysis` | Full transitive **multi-hop** blast radius of a column/field/table: every dependent field, plus affected sheets, dashboards, workbooks, and **owners to notify**. | `name` |
+| `search_content` | Find content whose **name contains** a term (case-insensitive substring), across workbooks, datasources, tables (and optionally fields/columns), with coverage numbers. | `term`, `types` |
 | `server_info` | Connected server, site, versions, endpoint, auth, and whether Catalog lineage is available. | none |
 
 All tools are **read-only**. The Metadata API has no mutations.
@@ -136,6 +139,7 @@ Once connected, try:
 - _"Show me the field-to-source-column map for the 'Sales Overview' workbook."_
 - _"List every calculated field in that workbook with its formula."_
 - _"Which published datasources feed workbooks in the Analytics project, and which are uncertified?"_
+- _"Run impact_analysis on the 'Profit Ratio' field: every dependent sheet, dashboard, workbook, and owner to notify."_
 - _"What is the blast radius of dropping the DIM_CUSTOMER table: workbooks, sheets, and owners to notify?"_
 
 ## Architecture
