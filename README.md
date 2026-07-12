@@ -202,7 +202,10 @@ Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of C
 
 ## Roadmap
 
-- [ ] Publish to PyPI (`uvx tableau-graphql-mcp`) and list on the official MCP registry
+Shipped: published on [PyPI](https://pypi.org/project/tableau-graphql-mcp/) and listed on the
+official [MCP registry](https://registry.modelcontextprotocol.io/v0/servers?search=tableau-graphql).
+Next:
+
 - [ ] Optional Data Management path: richer `downstreamWorkbooks` when Catalog is present
 - [ ] More curated query templates in `lineage_examples`
 - [ ] Optional response caching for repeated introspection within a session
