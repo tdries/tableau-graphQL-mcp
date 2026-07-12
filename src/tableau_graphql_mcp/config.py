@@ -31,8 +31,8 @@ class Settings:
     site_content_url: str = ""
     pat_name: str | None = None
     pat_secret: str | None = None
-    auth_token: str | None = None   # advanced: a pre-obtained X-Tableau-Auth token
-    cookie: str | None = None       # advanced: a browser session cookie (SSO tenants where PATs are disabled)
+    auth_token: str | None = None  # advanced: a pre-obtained X-Tableau-Auth token
+    cookie: str | None = None  # advanced: a browser session cookie (SSO tenants where PATs are disabled)
     api_version: str | None = None  # override REST API version; else auto-detected
     metadata_path: str | None = None  # override the GraphQL path; else auto-detected
     timeout: float = 60.0

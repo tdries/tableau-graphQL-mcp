@@ -101,8 +101,14 @@ def where_used(client: TableauClient, names: list[str]) -> dict:
         r = items.get((kind, name))
         if not r:
             r = items[(kind, name)] = {
-                "kind": kind, "name": name, "project": project, "owner": owner,
-                "via": [], "_seen": set(), "_tables": {}, "sheets": set(),
+                "kind": kind,
+                "name": name,
+                "project": project,
+                "owner": owner,
+                "via": [],
+                "_seen": set(),
+                "_tables": {},
+                "sheets": set(),
             }
         if project and not r["project"]:
             r["project"] = project
@@ -131,15 +137,33 @@ def where_used(client: TableauClient, names: list[str]) -> dict:
     for c in data.get("columns") or []:
         tinfo = _table_info(c.get("table"))
         for rf in c.get("referencedByFields") or []:
-            add_field(rf, {"kind": "column", "name": c["name"], "table": tinfo,
-                           "alias": rf.get("name"), "table_key": tinfo.get("table")})
+            add_field(
+                rf,
+                {
+                    "kind": "column",
+                    "name": c["name"],
+                    "table": tinfo,
+                    "alias": rf.get("name"),
+                    "table_key": tinfo.get("table"),
+                },
+            )
 
     # field / alias matches
     for f in data.get("fields") or []:
-        cols = [{"name": col.get("name"), "table": _table_info(col.get("table"))}
-                for col in f.get("columns") or []]
-        add_field(f, {"kind": "field", "name": f["name"], "field_type": f.get("__typename"),
-                      "columns": cols, "table_key": None})
+        cols = [
+            {"name": col.get("name"), "table": _table_info(col.get("table"))}
+            for col in f.get("columns") or []
+        ]
+        add_field(
+            f,
+            {
+                "kind": "field",
+                "name": f["name"],
+                "field_type": f.get("__typename"),
+                "columns": cols,
+                "table_key": None,
+            },
+        )
 
     # table matches -> its columns -> the fields that reference them (aggregate columns per workbook)
     for t in data.get("databaseTables") or []:
@@ -154,7 +178,7 @@ def where_used(client: TableauClient, names: list[str]) -> dict:
                     if wn and s.get("name"):
                         sheets_by_wb.setdefault(wn, set()).add(s["name"])
                 tgt = _target(rf.get("datasource"))
-                for target in ([tgt] if tgt else [("workbook", wn, None, None) for wn in sheets_by_wb]):
+                for target in [tgt] if tgt else [("workbook", wn, None, None) for wn in sheets_by_wb]:
                     r = rec(target)
                     tv = r["_tables"].get(tkey)
                     if not tv:
@@ -187,5 +211,5 @@ def where_used(client: TableauClient, names: list[str]) -> dict:
             "tables_matched": len(data.get("databaseTables") or []),
         },
         "note": "Resolved via core lineage (referencedByFields + field.sheets + datasource->workbook); "
-                "reliable without the Data Management add-on. Names are matched exactly and case-sensitively.",
+        "reliable without the Data Management add-on. Names are matched exactly and case-sensitively.",
     }

@@ -85,21 +85,25 @@ class TableauClient:
             if self._token:
                 return self._token
             raise TableauError("No credentials configured for sign-in.")
-        body = json.dumps({
-            "credentials": {
-                "personalAccessTokenName": s.pat_name,
-                "personalAccessTokenSecret": s.pat_secret,
-                "site": {"contentUrl": s.site_content_url},
+        body = json.dumps(
+            {
+                "credentials": {
+                    "personalAccessTokenName": s.pat_name,
+                    "personalAccessTokenSecret": s.pat_secret,
+                    "site": {"contentUrl": s.site_content_url},
+                }
             }
-        }).encode()
+        ).encode()
         url = f"{s.server}/api/{self.api_version()}/auth/signin"
         try:
             cred = self._request(url, data=body)["credentials"]
         except urllib.error.HTTPError as e:
             hint = ""
             if e.code == 401:
-                hint = (" Check the PAT name/secret and TABLEAU_SITE_CONTENT_URL. "
-                        "On SSO tenants PATs may be disabled; use TABLEAU_AUTH_TOKEN or TABLEAU_COOKIE.")
+                hint = (
+                    " Check the PAT name/secret and TABLEAU_SITE_CONTENT_URL. "
+                    "On SSO tenants PATs may be disabled; use TABLEAU_AUTH_TOKEN or TABLEAU_COOKIE."
+                )
             raise TableauError(f"Sign-in failed: {self._http_message(e)}{hint}") from None
         except (urllib.error.URLError, KeyError, ValueError) as e:
             raise TableauError(f"Sign-in failed: {e}") from None
@@ -122,7 +126,7 @@ class TableauClient:
             path = self.s.metadata_path
             return [self.s.server + (path if path.startswith("/") else "/" + path)]
         return [
-            f"{self.s.server}/api/metadata/graphql",           # documented standard (Server + Cloud)
+            f"{self.s.server}/api/metadata/graphql",  # documented standard (Server + Cloud)
             f"{self.s.server}/relationship-service-war/graphql",  # on-prem backend alias
         ]
 
@@ -199,7 +203,9 @@ class TableauClient:
         # Heuristic Catalog (Data Management) availability: can we read external assets?
         probe = self.graphql("{ databaseTablesConnection(first: 1) { totalCount } }")
         if probe.get("errors"):
-            info["catalog_note"] = "external-asset queries returned an error (Data Management add-on may be absent)"
+            info["catalog_note"] = (
+                "external-asset queries returned an error (Data Management add-on may be absent)"
+            )
             info["catalog_available"] = False
         else:
             n = (((probe.get("data") or {}).get("databaseTablesConnection")) or {}).get("totalCount")

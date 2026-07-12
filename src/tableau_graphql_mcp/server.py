@@ -1,7 +1,8 @@
 """FastMCP server exposing the Tableau Metadata API (GraphQL) for lineage questions.
 
-Read-only. Five tools: a universal GraphQL passthrough, live schema introspection, a
-curated query-example library, a robust ``where_used`` resolver, and a connection probe.
+Read-only. Seven tools: a universal GraphQL passthrough, live schema introspection, a
+curated query-example library, a robust ``where_used`` resolver, a multi-hop
+``impact_analysis``, a substring ``search_content``, and a connection probe.
 Works against any Tableau Server or Tableau Cloud site (see config.py for env vars).
 """
 
@@ -21,8 +22,9 @@ from .lineage import where_used as _where_used
 from .search import search_content as _search_content
 
 # stdio transport: logs MUST go to stderr; stdout carries the JSON-RPC protocol.
-logging.basicConfig(level=logging.INFO, stream=sys.stderr,
-                    format="%(asctime)s %(name)s %(levelname)s %(message)s")
+logging.basicConfig(
+    level=logging.INFO, stream=sys.stderr, format="%(asctime)s %(name)s %(levelname)s %(message)s"
+)
 
 mcp = FastMCP("tableau-graphql")
 
@@ -60,10 +62,12 @@ def _partial_results_warning(resp: dict) -> str | None:
     for e in resp.get("errors") or []:
         code = str((e.get("extensions") or {}).get("code") or "") + " " + str(e.get("message", ""))
         if "NODE_LIMIT" in code:
-            return ("PARTIAL RESULTS: the query exceeded the ~20,000-node limit and Tableau returned only "
-                    "part of the graph. Do NOT treat this as complete. Narrow the filter, select fewer nested "
-                    "fields, or page the outer connection with first/after (or use where_used / search_content / "
-                    "impact_analysis, which page and bound results for you).")
+            return (
+                "PARTIAL RESULTS: the query exceeded the ~20,000-node limit and Tableau returned only "
+                "part of the graph. Do NOT treat this as complete. Narrow the filter, select fewer nested "
+                "fields, or page the outer connection with first/after (or use where_used / search_content / "
+                "impact_analysis, which page and bound results for you)."
+            )
         if "MAX_PAGE_SIZE" in code:
             return "Page size was clamped to 1000 (MAX_PAGE_SIZE_EXCEEDED); request first:1000 and page with after."
     return None
@@ -122,12 +126,16 @@ def introspect_schema(type_name: str | None = None) -> dict:
     against exactly what this server exposes.
     """
     if type_name:
-        q = ("query($n:String!){ __type(name:$n){ name kind description "
-             "fields{ name description args{ name } type{ name kind ofType{ name kind ofType{ name kind } } } } "
-             "interfaces{ name } possibleTypes{ name } inputFields{ name } enumValues{ name } } }")
+        q = (
+            "query($n:String!){ __type(name:$n){ name kind description "
+            "fields{ name description args{ name } type{ name kind ofType{ name kind ofType{ name kind } } } } "
+            "interfaces{ name } possibleTypes{ name } inputFields{ name } enumValues{ name } } }"
+        )
         return client().graphql(q, {"n": type_name})
-    q = ("{ __schema{ queryType{ fields{ name args{ name type{ name kind ofType{ name } } } } } "
-         "types{ name kind } } }")
+    q = (
+        "{ __schema{ queryType{ fields{ name args{ name type{ name kind ofType{ name } } } } } "
+        "types{ name kind } } }"
+    )
     return client().graphql(q, {})
 
 

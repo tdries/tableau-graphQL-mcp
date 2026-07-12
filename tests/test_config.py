@@ -11,11 +11,13 @@ def test_normalize_server():
 
 
 def test_from_env_pat_keeps_secret_intact():
-    s = Settings.from_env({
-        "TABLEAU_SERVER": "https://h.com",
-        "TABLEAU_PAT_NAME": "n",
-        "TABLEAU_PAT_SECRET": "abc==:def",  # secrets can contain ':', must not be split
-    })
+    s = Settings.from_env(
+        {
+            "TABLEAU_SERVER": "https://h.com",
+            "TABLEAU_PAT_NAME": "n",
+            "TABLEAU_PAT_SECRET": "abc==:def",  # secrets can contain ':', must not be split
+        }
+    )
     assert s.server == "https://h.com"
     assert s.pat_name == "n"
     assert s.pat_secret == "abc==:def"

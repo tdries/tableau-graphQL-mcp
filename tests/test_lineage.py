@@ -16,13 +16,19 @@ def test_where_used_resolves_columns_and_tables():
         "columns": [
             {
                 "name": "SALES",
-                "table": {"__typename": "DatabaseTable", "name": "T", "schema": "S",
-                          "database": {"name": "DB", "connectionType": "snowflake"}},
+                "table": {
+                    "__typename": "DatabaseTable",
+                    "name": "T",
+                    "schema": "S",
+                    "database": {"name": "DB", "connectionType": "snowflake"},
+                },
                 "referencedByFields": [
                     {
                         "name": "Sales Amount",
-                        "datasource": {"__typename": "EmbeddedDatasource",
-                                       "workbook": {"name": "WB1", "projectName": "P", "owner": {"username": "u"}}},
+                        "datasource": {
+                            "__typename": "EmbeddedDatasource",
+                            "workbook": {"name": "WB1", "projectName": "P", "owner": {"username": "u"}},
+                        },
                         "sheets": [{"name": "Sheet A", "workbook": {"name": "WB1"}}],
                     }
                 ],
@@ -31,7 +37,9 @@ def test_where_used_resolves_columns_and_tables():
         "fields": [],
         "databaseTables": [
             {
-                "name": "DIM_CUSTOMER", "schema": "SALES", "fullName": "SALES.DIM_CUSTOMER",
+                "name": "DIM_CUSTOMER",
+                "schema": "SALES",
+                "fullName": "SALES.DIM_CUSTOMER",
                 "database": {"name": "DB", "connectionType": "snowflake"},
                 "columns": [
                     {
@@ -39,8 +47,14 @@ def test_where_used_resolves_columns_and_tables():
                         "referencedByFields": [
                             {
                                 "name": "f",
-                                "datasource": {"__typename": "EmbeddedDatasource",
-                                               "workbook": {"name": "WB2", "projectName": "P2", "owner": {"username": "u2"}}},
+                                "datasource": {
+                                    "__typename": "EmbeddedDatasource",
+                                    "workbook": {
+                                        "name": "WB2",
+                                        "projectName": "P2",
+                                        "owner": {"username": "u2"},
+                                    },
+                                },
                                 "sheets": [{"name": "S2", "workbook": {"name": "WB2"}}],
                             }
                         ],
@@ -78,7 +92,9 @@ def test_where_used_published_datasource_target():
                 "__typename": "ColumnField",
                 "datasource": {"__typename": "PublishedDatasource", "name": "Superstore"},
                 "sheets": [],
-                "columns": [{"name": "REVENUE", "table": {"__typename": "DatabaseTable", "name": "F", "schema": "V"}}],
+                "columns": [
+                    {"name": "REVENUE", "table": {"__typename": "DatabaseTable", "name": "F", "schema": "V"}}
+                ],
             }
         ],
         "databaseTables": [],

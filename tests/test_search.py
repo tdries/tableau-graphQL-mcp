@@ -12,25 +12,58 @@ class PagedClient:
 
     def graphql(self, query, variables=None):
         if "Connection(" not in query:  # exact-match fast path
-            return {"data": {"workbooks": [
-                {"name": "Sales Overview", "projectName": "Analytics", "owner": {"username": "jane.doe"}}]}}
+            return {
+                "data": {
+                    "workbooks": [
+                        {
+                            "name": "Sales Overview",
+                            "projectName": "Analytics",
+                            "owner": {"username": "jane.doe"},
+                        }
+                    ]
+                }
+            }
         self.page += 1
         if self.page == 1:
-            return {"data": {"workbooksConnection": {
-                "nodes": [{"name": "Sales Overview", "projectName": "Analytics", "owner": {"username": "jane.doe"}},
-                          {"name": "HR Report", "projectName": "People", "owner": {"username": "x"}}],
-                "pageInfo": {"hasNextPage": True, "endCursor": "c1"}, "totalCount": 3}}}
-        return {"data": {"workbooksConnection": {
-            "nodes": [{"name": "Regional Sales", "projectName": "Analytics", "owner": {"username": "jane.doe"}}],
-            "pageInfo": {"hasNextPage": False}, "totalCount": 3}}}
+            return {
+                "data": {
+                    "workbooksConnection": {
+                        "nodes": [
+                            {
+                                "name": "Sales Overview",
+                                "projectName": "Analytics",
+                                "owner": {"username": "jane.doe"},
+                            },
+                            {"name": "HR Report", "projectName": "People", "owner": {"username": "x"}},
+                        ],
+                        "pageInfo": {"hasNextPage": True, "endCursor": "c1"},
+                        "totalCount": 3,
+                    }
+                }
+            }
+        return {
+            "data": {
+                "workbooksConnection": {
+                    "nodes": [
+                        {
+                            "name": "Regional Sales",
+                            "projectName": "Analytics",
+                            "owner": {"username": "jane.doe"},
+                        }
+                    ],
+                    "pageInfo": {"hasNextPage": False},
+                    "totalCount": 3,
+                }
+            }
+        }
 
 
 def test_exact_and_substring_across_pages():
     out = search_content(PagedClient(), "sales", types=["workbook"])
     hits = out["matches"]["workbook"]
     names = {h["name"] for h in hits}
-    assert names == {"Sales Overview", "Regional Sales"}      # both pages, case-insensitive
-    assert {h["name"] for h in hits if h["exact"]} == {"Sales Overview"}   # exact fast path flagged
+    assert names == {"Sales Overview", "Regional Sales"}  # both pages, case-insensitive
+    assert {h["name"] for h in hits if h["exact"]} == {"Sales Overview"}  # exact fast path flagged
     assert out["summary"]["workbook"] == 2
 
 

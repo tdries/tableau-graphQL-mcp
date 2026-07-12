@@ -43,27 +43,40 @@ def impact_analysis(client: TableauClient, name: str) -> dict:
     cls = client.graphql(
         "query($n:String!){ columns(filter:{name:$n}){ __typename } "
         "fields(filter:{name:$n}){ __typename } "
-        "databaseTables(filter:{name:$n}){ __typename } }", {"n": name})
+        "databaseTables(filter:{name:$n}){ __typename } }",
+        {"n": name},
+    )
     d = cls.get("data") or {}
-    kinds = [k for k, present in (("column", d.get("columns")),
-                                  ("field", d.get("fields")),
-                                  ("table", d.get("databaseTables"))) if present]
+    kinds = [
+        k
+        for k, present in (
+            ("column", d.get("columns")),
+            ("field", d.get("fields")),
+            ("table", d.get("databaseTables")),
+        )
+        if present
+    ]
     if not kinds:
-        return {"name": name, "found": False,
-                "note": "No column, field, or table with that exact, case-sensitive name. "
-                        "Use search_content for substring matches."}
+        return {
+            "name": name,
+            "found": False,
+            "note": "No column, field, or table with that exact, case-sensitive name. "
+            "Use search_content for substring matches.",
+        }
 
-    fields: dict = {}       # (name, type) -> True
-    sheets: dict = {}       # (sheet, workbook) -> True
-    dashboards: dict = {}   # (dashboard, workbook) -> True
-    workbooks: dict = {}    # name -> {project, owner}
-    owners: dict = {}       # username -> email
+    fields: dict = {}  # (name, type) -> True
+    sheets: dict = {}  # (sheet, workbook) -> True
+    dashboards: dict = {}  # (dashboard, workbook) -> True
+    workbooks: dict = {}  # name -> {project, owner}
+    owners: dict = {}  # username -> email
     truncated = False
 
     def add_wb(wb: dict):
         if wb and wb.get("name"):
-            workbooks[wb["name"]] = {"project": wb.get("projectName"),
-                                     "owner": (wb.get("owner") or {}).get("username")}
+            workbooks[wb["name"]] = {
+                "project": wb.get("projectName"),
+                "owner": (wb.get("owner") or {}).get("username"),
+            }
             o = wb.get("owner") or {}
             if o.get("username"):
                 owners.setdefault(o["username"], o.get("email"))
@@ -97,14 +110,20 @@ def impact_analysis(client: TableauClient, name: str) -> dict:
             absorb(node)
 
     if "column" in kinds:
-        run(f"query($n:String!){{ columns(filter:{{name:$n}}){{ name {_DOWN} }} }}",
-            lambda data: data.get("columns") or [])
+        run(
+            f"query($n:String!){{ columns(filter:{{name:$n}}){{ name {_DOWN} }} }}",
+            lambda data: data.get("columns") or [],
+        )
     if "field" in kinds:
-        run(f"query($n:String!){{ fields(filter:{{name:$n}}){{ __typename {_DOWN} }} }}",
-            lambda data: data.get("fields") or [])
+        run(
+            f"query($n:String!){{ fields(filter:{{name:$n}}){{ __typename {_DOWN} }} }}",
+            lambda data: data.get("fields") or [],
+        )
     if "table" in kinds:
-        run(f"query($n:String!){{ databaseTables(filter:{{name:$n}}){{ name {_DOWN_TABLE} }} }}",
-            lambda data: data.get("databaseTables") or [])
+        run(
+            f"query($n:String!){{ databaseTables(filter:{{name:$n}}){{ name {_DOWN_TABLE} }} }}",
+            lambda data: data.get("databaseTables") or [],
+        )
 
     return {
         "name": name,
@@ -121,12 +140,17 @@ def impact_analysis(client: TableauClient, name: str) -> dict:
         "affected_workbooks": [{"name": n, **v} for n, v in sorted(workbooks.items())],
         "affected_dashboards": sorted({db for (db, _wb) in dashboards}),
         "owners_to_notify": [{"username": u, "email": e} for u, e in sorted(owners.items())],
-        "note": ("Full transitive (multi-hop) downstream closure via Tableau's downstream lineage "
-                 "(calc-of-a-calc chains included). Workbooks are derived from downstream sheets/dashboards "
-                 "because the flat downstreamWorkbooks edge is unreliable. "
-                 + ("Some branches hit the ~20000-node limit and are incomplete; re-run on a narrower name. "
-                    if truncated else "")
-                 + "If everything is empty on a site without Data Management, the transitive edges may not be "
-                   "indexed; fall back to where_used for the direct (one-hop) references."),
+        "note": (
+            "Full transitive (multi-hop) downstream closure via Tableau's downstream lineage "
+            "(calc-of-a-calc chains included). Workbooks are derived from downstream sheets/dashboards "
+            "because the flat downstreamWorkbooks edge is unreliable. "
+            + (
+                "Some branches hit the ~20000-node limit and are incomplete; re-run on a narrower name. "
+                if truncated
+                else ""
+            )
+            + "If everything is empty on a site without Data Management, the transitive edges may not be "
+            "indexed; fall back to where_used for the direct (one-hop) references."
+        ),
         "truncated": truncated,
     }

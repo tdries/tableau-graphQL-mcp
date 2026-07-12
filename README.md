@@ -8,6 +8,9 @@
 
 <p align="center">
   <a href="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/ci.yml"><img src="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/codeql.yml"><img src="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+  <a href="https://codecov.io/gh/tdries/tableau-graphQL-mcp"><img src="https://codecov.io/gh/tdries/tableau-graphQL-mcp/branch/main/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB.svg" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/MCP-compatible-8A2BE2.svg" alt="MCP compatible">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-00696E.svg" alt="MIT License"></a>
@@ -178,11 +181,16 @@ npx @modelcontextprotocol/inspector uvx --from git+https://github.com/tdries/tab
 
 ```bash
 git clone https://github.com/tdries/tableau-graphQL-mcp && cd tableau-graphQL-mcp
-uv sync
-uv run tableau-graphql-mcp     # run from source
-uv run pytest                  # tests (offline; no Tableau needed)
-uv run ruff check .
+uv sync --all-extras
+uv run tableau-graphql-mcp                     # run from source
+uv run pytest --cov=tableau_graphql_mcp        # tests + coverage (offline; no Tableau needed)
+uv run ruff check .                            # lint
+uv run ruff format --check .                   # format
 ```
+
+The same three gates (lint, format, tests with a 85% coverage floor) run in CI across
+Linux/macOS/Windows and Python 3.10 to 3.13. Coverage is reported to Codecov and the code is
+scanned by CodeQL on every push.
 
 Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
