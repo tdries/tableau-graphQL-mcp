@@ -11,10 +11,8 @@
 <p align="center">
   <a href="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/ci.yml"><img src="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/codeql.yml"><img src="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
-  <a href="https://codecov.io/gh/tdries/tableau-graphQL-mcp"><img src="https://codecov.io/gh/tdries/tableau-graphQL-mcp/branch/main/graph/badge.svg" alt="Coverage"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
   <a href="https://pypi.org/project/tableau-graphql-mcp/"><img src="https://img.shields.io/pypi/v/tableau-graphql-mcp.svg" alt="PyPI"></a>
-  <a href="https://pepy.tech/project/tableau-graphql-mcp"><img src="https://static.pepy.tech/badge/tableau-graphql-mcp/month" alt="Downloads"></a>
   <img src="https://img.shields.io/pypi/pyversions/tableau-graphql-mcp.svg" alt="Python versions">
   <img src="https://img.shields.io/badge/MCP-compatible-8A2BE2.svg" alt="MCP compatible">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-00696E.svg" alt="MIT License"></a>
@@ -43,10 +41,10 @@ It ships **seven curated tools**: a universal GraphQL passthrough, live schema i
 
 ### Why it's different
 - **Any question, done right.** `graphql_query` runs any read-only GraphQL; `introspect_schema` and a built-in cheat-sheet plus 28 worked examples keep the model's queries correct.
-- **True impact analysis (multi-hop).** `impact_analysis` follows the *whole* dependency chain — a calc built on a calc built on a column is included — and returns the full blast radius plus the de-duplicated **owners to notify**, not just direct references.
+- **True impact analysis (multi-hop).** `impact_analysis` follows the *whole* dependency chain (a calc built on a calc built on a column is included) and returns the full blast radius plus the de-duplicated **owners to notify**, not just direct references.
 - **Works everywhere.** Tableau **Server** *and* **Cloud**. The REST API version and the GraphQL endpoint (`/api/metadata/graphql`, with a `/relationship-service-war/graphql` fallback) are **auto-detected**.
 - **Robust lineage without Catalog.** `where_used` resolves workbooks via core lineage (`referencedByFields -> sheets -> workbook`), so it works even when the Data Management add-on's `downstreamWorkbooks` is empty.
-- **No silent truncation.** `graphql_query` flags `partial_results` when a query hits the node limit, and `search_content` reports `scanned`/`total` coverage — so a truncated answer is never mistaken for a complete one.
+- **No silent truncation.** `graphql_query` flags `partial_results` when a query hits the node limit, and `search_content` reports `scanned`/`total` coverage, so a truncated answer is never mistaken for a complete one.
 - **Tiny and safe.** Read-only, stdio-only (no inbound port), secrets from env only, and **no dependencies beyond the MCP SDK** (stdlib `urllib` for HTTP).
 
 ## Quickstart
