@@ -1,5 +1,5 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "io.github.tdries/tableau-graphql-mcp",
   "description": "Ask any Tableau lineage question, in any MCP client, through the Tableau Metadata API.",
   "status": "active",
@@ -10,34 +10,34 @@
   "version": "0.1.1",
   "packages": [
     {
-      "registry_type": "pypi",
-      "registry_base_url": "https://pypi.org",
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
       "identifier": "tableau-graphql-mcp",
       "version": "0.1.1",
       "transport": {
         "type": "stdio"
       },
-      "environment_variables": [
+      "environmentVariables": [
         {
           "name": "TABLEAU_SERVER",
           "description": "https://tableau.company.com (Server) or https://<pod>.online.tableau.com (Cloud)",
-          "is_required": true
+          "isRequired": true
         },
         {
           "name": "TABLEAU_SITE_CONTENT_URL",
           "description": "Site content-url slug; empty = Default site (Server only)",
-          "is_required": false
+          "isRequired": false
         },
         {
           "name": "TABLEAU_PAT_NAME",
           "description": "Personal Access Token name",
-          "is_required": true
+          "isRequired": true
         },
         {
           "name": "TABLEAU_PAT_SECRET",
           "description": "Personal Access Token secret (the whole string)",
-          "is_required": true,
-          "is_secret": true
+          "isRequired": true,
+          "isSecret": true
         }
       ]
     }
