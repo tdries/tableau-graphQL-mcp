@@ -8,7 +8,11 @@ Management add-on, where ``downstreamWorkbooks`` is typically empty.
 
 from __future__ import annotations
 
+from typing import Any
+
 from .client import TableauClient, TableauError
+
+Target = tuple[str, str, str | None, str | None]
 
 WHERE_USED_QUERY = """
 query WhereUsed($names: [String]) {
@@ -63,7 +67,7 @@ query WhereUsed($names: [String]) {
 """
 
 
-def _table_info(tbl: dict | None) -> dict:
+def _table_info(tbl: dict[str, Any] | None) -> dict[str, Any]:
     tbl = tbl or {}
     db = tbl.get("database") or {}
     return {
@@ -75,7 +79,7 @@ def _table_info(tbl: dict | None) -> dict:
     }
 
 
-def _target(ds: dict | None):
+def _target(ds: dict[str, Any] | None) -> Target | None:
     ds = ds or {}
     kind = ds.get("__typename")
     if kind == "EmbeddedDatasource":
@@ -87,16 +91,16 @@ def _target(ds: dict | None):
     return None
 
 
-def where_used(client: TableauClient, names: list[str]) -> dict:
+def where_used(client: TableauClient, names: list[str]) -> dict[str, Any]:
     """Resolve which workbooks / datasources use the given exact names."""
     resp = client.graphql(WHERE_USED_QUERY, {"names": names})
     data = resp.get("data") or {}
     if resp.get("errors") and not data:
         raise TableauError("Metadata API errors: " + str(resp["errors"])[:400])
 
-    items: dict[tuple, dict] = {}
+    items: dict[tuple[str, str], dict[str, Any]] = {}
 
-    def rec(target) -> dict:
+    def rec(target: Target) -> dict[str, Any]:
         kind, name, project, owner = target
         r = items.get((kind, name))
         if not r:
@@ -116,8 +120,8 @@ def where_used(client: TableauClient, names: list[str]) -> dict:
             r["owner"] = owner
         return r
 
-    def add_field(field: dict, via: dict):
-        sheets_by_wb: dict[str, set] = {}
+    def add_field(field: dict[str, Any], via: dict[str, Any]) -> None:
+        sheets_by_wb: dict[str, set[str]] = {}
         for s in field.get("sheets") or []:
             wn = (s.get("workbook") or {}).get("name")
             if wn and s.get("name"):
@@ -172,7 +176,7 @@ def where_used(client: TableauClient, names: list[str]) -> dict:
         for c in t.get("columns") or []:
             cname = c.get("name")
             for rf in c.get("referencedByFields") or []:
-                sheets_by_wb: dict[str, set] = {}
+                sheets_by_wb: dict[str, set[str]] = {}
                 for s in rf.get("sheets") or []:
                     wn = (s.get("workbook") or {}).get("name")
                     if wn and s.get("name"):

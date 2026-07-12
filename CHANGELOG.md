@@ -20,6 +20,13 @@ API**: renaming a tool or a required argument is a MAJOR change.
   ~20,000-node limit, instead of passing the truncation through silently.
 - `search_content` adds an exact-match fast path (complete, instant) and reports per-type
   `scanned`/`total` coverage so partial substring scans are explicit.
+- Fully typed: the package ships a verified PEP 561 `py.typed` marker and passes
+  `mypy --strict` in CI, so consumers importing it get complete types.
+
+### Internal
+- CI now runs `ruff format --check` and `mypy --strict`, uploads coverage to Codecov
+  (85% floor), and scans with CodeQL and OpenSSF Scorecard. GitHub Actions are pinned to
+  commit SHAs; a tool-schema contract test guards the public tool API.
 
 ## [0.1.0] - 2026-07-09
 

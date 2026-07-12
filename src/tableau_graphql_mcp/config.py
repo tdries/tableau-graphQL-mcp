@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 
@@ -38,9 +39,9 @@ class Settings:
     timeout: float = 60.0
 
     @classmethod
-    def from_env(cls, env: dict | None = None) -> Settings:
-        env = os.environ if env is None else env
-        server = env.get("TABLEAU_SERVER", "").strip()
+    def from_env(cls, env: dict[str, str] | None = None) -> Settings:
+        source: Mapping[str, str] = env if env is not None else os.environ
+        server = source.get("TABLEAU_SERVER", "").strip()
         if not server:
             raise RuntimeError(
                 "TABLEAU_SERVER is required, e.g. "
@@ -48,18 +49,18 @@ class Settings:
                 "https://10ax.online.tableau.com (Cloud)."
             )
         try:
-            timeout = float(env.get("TABLEAU_TIMEOUT", "60"))
+            timeout = float(source.get("TABLEAU_TIMEOUT", "60"))
         except ValueError:
             timeout = 60.0
         s = cls(
             server=normalize_server(server),
-            site_content_url=env.get("TABLEAU_SITE_CONTENT_URL", "").strip(),
-            pat_name=(env.get("TABLEAU_PAT_NAME") or None),
-            pat_secret=(env.get("TABLEAU_PAT_SECRET") or None),
-            auth_token=(env.get("TABLEAU_AUTH_TOKEN") or None),
-            cookie=(env.get("TABLEAU_COOKIE") or None),
-            api_version=(env.get("TABLEAU_API_VERSION") or None),
-            metadata_path=(env.get("TABLEAU_METADATA_PATH") or None),
+            site_content_url=source.get("TABLEAU_SITE_CONTENT_URL", "").strip(),
+            pat_name=(source.get("TABLEAU_PAT_NAME") or None),
+            pat_secret=(source.get("TABLEAU_PAT_SECRET") or None),
+            auth_token=(source.get("TABLEAU_AUTH_TOKEN") or None),
+            cookie=(source.get("TABLEAU_COOKIE") or None),
+            api_version=(source.get("TABLEAU_API_VERSION") or None),
+            metadata_path=(source.get("TABLEAU_METADATA_PATH") or None),
             timeout=timeout,
         )
         s.validate()

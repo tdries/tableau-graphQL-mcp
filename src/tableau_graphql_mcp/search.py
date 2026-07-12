@@ -8,10 +8,16 @@ The Metadata API's filters are exact and case-sensitive, so this does two things
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 from .client import TableauClient, TableauError
 
+# formatter: takes a raw GraphQL node and returns a normalized result dict
+Formatter = Callable[[dict[str, Any]], dict[str, Any]]
+
 # type -> (connection field, exact entry point, node selection, formatter)
-TYPE_SPECS = {
+TYPE_SPECS: dict[str, tuple[str, str, str, Formatter]] = {
     "workbook": (
         "workbooksConnection",
         "workbooks",
@@ -61,15 +67,15 @@ DEFAULT_TYPES = ["workbook", "datasource", "table"]
 
 def search_content(
     client: TableauClient, term: str, types: list[str] | None = None, page_size: int = 200, max_pages: int = 6
-) -> dict:
+) -> dict[str, Any]:
     term_l = term.lower()
     types = types or DEFAULT_TYPES
     unknown = [t for t in types if t not in TYPE_SPECS]
     if unknown:
         raise TableauError(f"Unknown type(s) {unknown}. Choose from: {list(TYPE_SPECS)}.")
 
-    matches: dict[str, list] = {}
-    coverage: dict[str, dict] = {}
+    matches: dict[str, list[dict[str, Any]]] = {}
+    coverage: dict[str, dict[str, Any]] = {}
     for t in types:
         conn_field, exact_entry, selection, fmt = TYPE_SPECS[t]
 

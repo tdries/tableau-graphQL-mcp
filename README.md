@@ -192,7 +192,20 @@ The same three gates (lint, format, tests with a 85% coverage floor) run in CI a
 Linux/macOS/Windows and Python 3.10 to 3.13. Coverage is reported to Codecov and the code is
 scanned by CodeQL on every push.
 
-Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
+The same gates run in CI (Linux/macOS/Windows, Python 3.10 to 3.13): `ruff check`,
+`ruff format --check`, `mypy --strict`, and `pytest` with a coverage floor. The package
+ships a PEP 561 `py.typed` marker, so importing it gives your type checker full types.
+
+Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Roadmap
+
+- [ ] Publish to PyPI (`uvx tableau-graphql-mcp`) and list on the official MCP registry
+- [ ] Optional Data Management path: richer `downstreamWorkbooks` when Catalog is present
+- [ ] More curated query templates in `lineage_examples`
+- [ ] Optional response caching for repeated introspection within a session
+
+Ideas and votes welcome in [Discussions](https://github.com/tdries/tableau-graphQL-mcp/discussions).
 
 ## License
 

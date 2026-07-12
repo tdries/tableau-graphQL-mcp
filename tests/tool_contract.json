@@ -1,0 +1,52 @@
+{
+  "graphql_query": {
+    "props": [
+      "query",
+      "variables"
+    ],
+    "required": [
+      "query"
+    ]
+  },
+  "impact_analysis": {
+    "props": [
+      "name"
+    ],
+    "required": [
+      "name"
+    ]
+  },
+  "introspect_schema": {
+    "props": [
+      "type_name"
+    ],
+    "required": []
+  },
+  "lineage_examples": {
+    "props": [
+      "category"
+    ],
+    "required": []
+  },
+  "search_content": {
+    "props": [
+      "term",
+      "types"
+    ],
+    "required": [
+      "term"
+    ]
+  },
+  "server_info": {
+    "props": [],
+    "required": []
+  },
+  "where_used": {
+    "props": [
+      "names"
+    ],
+    "required": [
+      "names"
+    ]
+  }
+}

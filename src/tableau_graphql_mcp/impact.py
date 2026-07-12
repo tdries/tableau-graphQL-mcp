@@ -12,6 +12,9 @@ because the flat ``downstreamWorkbooks`` edge is unreliable on some servers.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 from .client import TableauClient
 
 # transitive downstream selection (valid on Column and on the Field types)
@@ -31,7 +34,7 @@ _DOWN_TABLE = """
 """
 
 
-def _node_limit_hit(resp: dict) -> bool:
+def _node_limit_hit(resp: dict[str, Any]) -> bool:
     for e in resp.get("errors") or []:
         blob = f"{(e.get('extensions') or {}).get('code')} {e.get('message', '')}"
         if "NODE_LIMIT" in blob:
@@ -39,7 +42,7 @@ def _node_limit_hit(resp: dict) -> bool:
     return False
 
 
-def impact_analysis(client: TableauClient, name: str) -> dict:
+def impact_analysis(client: TableauClient, name: str) -> dict[str, Any]:
     cls = client.graphql(
         "query($n:String!){ columns(filter:{name:$n}){ __typename } "
         "fields(filter:{name:$n}){ __typename } "
@@ -64,14 +67,14 @@ def impact_analysis(client: TableauClient, name: str) -> dict:
             "Use search_content for substring matches.",
         }
 
-    fields: dict = {}  # (name, type) -> True
-    sheets: dict = {}  # (sheet, workbook) -> True
-    dashboards: dict = {}  # (dashboard, workbook) -> True
-    workbooks: dict = {}  # name -> {project, owner}
-    owners: dict = {}  # username -> email
+    fields: dict[tuple[str, str | None], bool] = {}  # (name, type) -> True
+    sheets: dict[tuple[str, str | None], bool] = {}  # (sheet, workbook) -> True
+    dashboards: dict[tuple[str, str | None], bool] = {}  # (dashboard, workbook) -> True
+    workbooks: dict[str, dict[str, Any]] = {}  # name -> {project, owner}
+    owners: dict[str, str | None] = {}  # username -> email
     truncated = False
 
-    def add_wb(wb: dict):
+    def add_wb(wb: dict[str, Any]) -> None:
         if wb and wb.get("name"):
             workbooks[wb["name"]] = {
                 "project": wb.get("projectName"),
@@ -81,7 +84,7 @@ def impact_analysis(client: TableauClient, name: str) -> dict:
             if o.get("username"):
                 owners.setdefault(o["username"], o.get("email"))
 
-    def absorb(node: dict):
+    def absorb(node: dict[str, Any]) -> None:
         for f in node.get("downstreamFields") or []:
             if f.get("name"):
                 fields[(f["name"], f.get("__typename"))] = True
@@ -101,7 +104,7 @@ def impact_analysis(client: TableauClient, name: str) -> dict:
             if o.get("username"):
                 owners.setdefault(o["username"], o.get("email"))
 
-    def run(query: str, extract):
+    def run(query: str, extract: Callable[[dict[str, Any]], list[dict[str, Any]]]) -> None:
         nonlocal truncated
         r = client.graphql(query, {"n": name})
         if _node_limit_hit(r):

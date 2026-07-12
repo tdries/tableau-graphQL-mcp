@@ -1,19 +1,34 @@
 name: Release
 
-# Tag a version (vX.Y.Z) to build and publish to PyPI via Trusted Publishing (OIDC).
+# Tag a version (vX.Y.Z) to build and publish to PyPI via Trusted Publishing (OIDC),
+# then cut a GitHub Release with generated notes.
 # Requires a PyPI project + a configured trusted publisher for this repo/workflow.
 on:
   push:
     tags: ["v*"]
+
+permissions: {}
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
-      id-token: write
+      id-token: write   # OIDC for Trusted Publishing + PEP 740 attestations
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
       - run: uv build
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # create the GitHub Release
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          generate_release_notes: true

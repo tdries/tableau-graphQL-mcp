@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import re
 import sys
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
@@ -54,7 +55,7 @@ def _is_write(query: str) -> bool:
     return bool(_WRITE_OP.search(q))
 
 
-def _partial_results_warning(resp: dict) -> str | None:
+def _partial_results_warning(resp: dict[str, Any]) -> str | None:
     """Turn the Metadata API's partial-result errors into a loud, structured warning.
 
     The API returns partial `data` PLUS a NODE_LIMIT_EXCEEDED / MAX_PAGE_SIZE_EXCEEDED entry
@@ -74,7 +75,7 @@ def _partial_results_warning(resp: dict) -> str | None:
 
 
 @mcp.tool()
-def graphql_query(query: str, variables: dict | None = None) -> dict:
+def graphql_query(query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
     """Run ANY read-only GraphQL query against the Tableau Metadata API. This is the
     general-purpose tool; use it for any lineage question. Returns {"data": ..., "errors": ...}.
 
@@ -117,7 +118,7 @@ def graphql_query(query: str, variables: dict | None = None) -> dict:
 
 
 @mcp.tool()
-def introspect_schema(type_name: str | None = None) -> dict:
+def introspect_schema(type_name: str | None = None) -> dict[str, Any]:
     """Introspect the live Metadata API GraphQL schema (introspection is enabled).
 
     With no argument: returns every Query entry point (with its args) and the full list of
@@ -140,7 +141,7 @@ def introspect_schema(type_name: str | None = None) -> dict:
 
 
 @mcp.tool()
-def lineage_examples(category: str | None = None) -> dict:
+def lineage_examples(category: str | None = None) -> dict[str, Any]:
     """Return a schema cheat-sheet and a library of curated lineage questions with their
     correct GraphQL queries (+ example variables). Read this before composing a `graphql_query`.
 
@@ -158,7 +159,7 @@ def lineage_examples(category: str | None = None) -> dict:
 
 
 @mcp.tool()
-def where_used(names: list[str]) -> dict:
+def where_used(names: list[str]) -> dict[str, Any]:
     """Find which workbooks (and published datasources) USE the given names, the common
     'where is this used / impact analysis' question, resolved robustly.
 
@@ -179,7 +180,7 @@ def where_used(names: list[str]) -> dict:
 
 
 @mcp.tool()
-def impact_analysis(name: str) -> dict:
+def impact_analysis(name: str) -> dict[str, Any]:
     """Full transitive (MULTI-HOP) downstream impact of a column, field, or table. Returns every
     field that directly OR indirectly depends on it, and all affected sheets, dashboards,
     workbooks, plus the de-duplicated set of OWNERS to notify before a change.
@@ -199,7 +200,7 @@ def impact_analysis(name: str) -> dict:
 
 
 @mcp.tool()
-def search_content(term: str, types: list[str] | None = None) -> dict:
+def search_content(term: str, types: list[str] | None = None) -> dict[str, Any]:
     """Find content whose NAME contains `term` (case-insensitive SUBSTRING). Use this when you
     only know part of a name, since every other tool and the Metadata API filter are exact-match.
 
@@ -216,7 +217,7 @@ def search_content(term: str, types: list[str] | None = None) -> dict:
 
 
 @mcp.tool()
-def server_info() -> dict:
+def server_info() -> dict[str, Any]:
     """Report the connected Tableau environment: server URL, site, product & REST API version,
     which Metadata API endpoint is in use, the auth method, and whether external-asset
     (Data Management / Catalog) lineage appears available. Good first call to confirm the

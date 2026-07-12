@@ -14,6 +14,7 @@ import re
 import threading
 import urllib.error
 import urllib.request
+from typing import Any
 
 from .config import Settings
 
@@ -33,7 +34,9 @@ class TableauClient:
         self._endpoint: str | None = None
 
     # ---------- low-level HTTP ----------
-    def _request(self, url: str, *, data: bytes | None = None, headers: dict | None = None) -> dict:
+    def _request(
+        self, url: str, *, data: bytes | None = None, headers: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         h = {"Accept": "application/json"}
         if data is not None:
             h["Content-Type"] = "application/json"
@@ -64,7 +67,7 @@ class TableauClient:
         return self._api_version
 
     # ---------- auth ----------
-    def _auth_headers(self) -> dict:
+    def _auth_headers(self) -> dict[str, str]:
         if self.s.cookie:
             h = {
                 "Cookie": self.s.cookie,
@@ -134,7 +137,7 @@ class TableauClient:
         if self._endpoint:
             return self._endpoint
         probe = json.dumps({"query": "{ __typename }"}).encode()
-        last_err = None
+        last_err: urllib.error.HTTPError | urllib.error.URLError | None = None
         for url in self._candidates():
             try:
                 d = self._request(url, data=probe, headers=self._auth_headers())
@@ -167,7 +170,7 @@ class TableauClient:
         )
 
     # ---------- GraphQL ----------
-    def graphql(self, query: str, variables: dict | None = None) -> dict:
+    def graphql(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
         with self._lock:
             url = self._resolve_endpoint()
         payload = json.dumps({"query": query, "variables": variables or {}}).encode()
@@ -185,8 +188,8 @@ class TableauClient:
             raise TableauError(f"Metadata API unreachable: {e}") from None
 
     # ---------- context ----------
-    def server_info(self) -> dict:
-        info: dict = {
+    def server_info(self) -> dict[str, Any]:
+        info: dict[str, Any] = {
             "server": self.s.server,
             "site_content_url": self.s.site_content_url or "(default)",
             "auth": "cookie" if self.s.cookie else ("token" if self.s.auth_token else "pat"),
