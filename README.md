@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.tdries/tableau-graphql-mcp -->
+
 <p align="center">
   <img src="docs/images/banner.png" alt="tableau-graphql-mcp" width="880">
 </p>

@@ -7,6 +7,8 @@ API**: renaming a tool or a required argument is a MAJOR change.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-12
+
 ### Added
 - `impact_analysis` tool: full transitive **multi-hop** downstream blast radius of a column,
   field, or table (every dependent field, plus affected sheets, dashboards, workbooks, and the
@@ -27,6 +29,8 @@ API**: renaming a tool or a required argument is a MAJOR change.
 - CI now runs `ruff format --check` and `mypy --strict`, uploads coverage to Codecov
   (85% floor), and scans with CodeQL and OpenSSF Scorecard. GitHub Actions are pinned to
   commit SHAs; a tool-schema contract test guards the public tool API.
+- Add an `mcp-name` marker to the README so the official MCP registry can validate
+  package ownership for the PyPI listing.
 
 ## [0.1.0] - 2026-07-09
 
@@ -41,5 +45,6 @@ API**: renaming a tool or a required argument is a MAJOR change.
 - Embedded schema cheat-sheet and 28 curated question→GraphQL examples across 8 categories.
 - `uvx`-runnable console entry point; no runtime dependencies beyond the MCP SDK.
 
-[Unreleased]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/tdries/tableau-graphQL-mcp/releases/tag/v0.1.0
