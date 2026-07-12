@@ -11,7 +11,9 @@
   <a href="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/codeql.yml"><img src="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
   <a href="https://codecov.io/gh/tdries/tableau-graphQL-mcp"><img src="https://codecov.io/gh/tdries/tableau-graphQL-mcp/branch/main/graph/badge.svg" alt="Coverage"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
-  <img src="https://img.shields.io/badge/python-3.10%2B-3776AB.svg" alt="Python 3.10+">
+  <a href="https://pypi.org/project/tableau-graphql-mcp/"><img src="https://img.shields.io/pypi/v/tableau-graphql-mcp.svg" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/tableau-graphql-mcp"><img src="https://static.pepy.tech/badge/tableau-graphql-mcp/month" alt="Downloads"></a>
+  <img src="https://img.shields.io/pypi/pyversions/tableau-graphql-mcp.svg" alt="Python versions">
   <img src="https://img.shields.io/badge/MCP-compatible-8A2BE2.svg" alt="MCP compatible">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-00696E.svg" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/Tableau-Server%20%2B%20Cloud-006EFF.svg" alt="Server + Cloud">
@@ -19,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="cursor://anysphere.cursor-deeplink/mcp/install?name=tableau-graphql&config=eyJjb21tYW5kIjogInV2eCIsICJhcmdzIjogWyItLWZyb20iLCAiZ2l0K2h0dHBzOi8vZ2l0aHViLmNvbS90ZHJpZXMvdGFibGVhdS1ncmFwaFFMLW1jcCIsICJ0YWJsZWF1LWdyYXBocWwtbWNwIl19"><img src="https://img.shields.io/badge/Add%20to-Cursor-0098FF.svg" alt="Add to Cursor"></a>
+  <a href="cursor://anysphere.cursor-deeplink/mcp/install?name=tableau-graphql&config=eyJjb21tYW5kIjogInV2eCIsICJhcmdzIjogWyJ0YWJsZWF1LWdyYXBocWwtbWNwIl19"><img src="https://img.shields.io/badge/Add%20to-Cursor-0098FF.svg" alt="Add to Cursor"></a>
 </p>
 
 <p align="center">
@@ -57,12 +59,10 @@ claude mcp add tableau-graphql \
   -e TABLEAU_SITE_CONTENT_URL=YourSite \
   -e TABLEAU_PAT_NAME=my-token \
   -e TABLEAU_PAT_SECRET=the-full-secret \
-  -- uvx --from git+https://github.com/tdries/tableau-graphQL-mcp tableau-graphql-mcp
+  -- uvx tableau-graphql-mcp
 ```
 
-That's all. `uvx` fetches and runs the server in an isolated environment; nothing to clone or install. Then ask Claude a lineage question.
-
-> **Coming to PyPI:** once published, the command target simplifies to `uvx tableau-graphql-mcp`.
+That's all. `uvx` fetches the package from PyPI and runs it in an isolated environment; nothing to clone or install (and no `git` required). Then ask Claude a lineage question.
 
 ## Configuration
 
@@ -92,7 +92,7 @@ Edit `claude_desktop_config.json` (macOS: `~/Library/Application Support/Claude/
   "mcpServers": {
     "tableau-graphql": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/tdries/tableau-graphQL-mcp", "tableau-graphql-mcp"],
+      "args": ["tableau-graphql-mcp"],
       "env": {
         "TABLEAU_SERVER": "https://10ax.online.tableau.com",
         "TABLEAU_SITE_CONTENT_URL": "YourSite",
@@ -157,7 +157,7 @@ The server speaks MCP over **stdio** to the client and HTTPS to Tableau: it sign
 - **Local and stdio-only.** No inbound network port is opened.
 - **Secrets from env only.** Never passed as tool arguments, never logged, never returned in output.
 - **Least privilege.** The PAT inherits your Tableau permissions; the API only returns content you can see.
-- Pin a version in production by targeting a tag: `git+https://github.com/tdries/tableau-graphQL-mcp@v0.1.0`.
+- Pin a version in production: `uvx tableau-graphql-mcp==0.1.0`.
 
 See [SECURITY.md](SECURITY.md).
 
@@ -174,7 +174,7 @@ See [SECURITY.md](SECURITY.md).
 Inspect the server directly with the MCP Inspector:
 
 ```bash
-npx @modelcontextprotocol/inspector uvx --from git+https://github.com/tdries/tableau-graphQL-mcp tableau-graphql-mcp
+npx @modelcontextprotocol/inspector uvx tableau-graphql-mcp
 ```
 
 ## Development
