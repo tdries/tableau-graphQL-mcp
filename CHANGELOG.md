@@ -7,6 +7,13 @@ API**: renaming a tool or a required argument is a MAJOR change.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-13
+
+### Changed
+- Docs only: the README roadmap now reflects that PyPI and the MCP registry are shipped,
+  and two badges that rendered broken on the project page (pepy downloads 404, an
+  unconnected Codecov "unknown") were removed. Republished so the PyPI page matches.
+
 ## [0.1.1] - 2026-07-12
 
 ### Added
@@ -45,6 +52,7 @@ API**: renaming a tool or a required argument is a MAJOR change.
 - Embedded schema cheat-sheet and 28 curated question→GraphQL examples across 8 categories.
 - `uvx`-runnable console entry point; no runtime dependencies beyond the MCP SDK.
 
-[Unreleased]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/tdries/tableau-graphQL-mcp/releases/tag/v0.1.0
