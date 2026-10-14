@@ -8,6 +8,7 @@ import urllib.request
 
 import pytest
 
+from tableau_graphql_mcp import client as client_mod
 from tableau_graphql_mcp.client import TableauClient, TableauError
 from tableau_graphql_mcp.config import Settings
 
@@ -31,7 +32,7 @@ def _httperr(url, code, body=b"err"):
 
 
 def _patch(monkeypatch, handler):
-    monkeypatch.setattr(urllib.request, "urlopen", lambda req, timeout=None: handler(req))
+    monkeypatch.setattr(client_mod._OPENER, "open", lambda req, timeout=None: handler(req))
 
 
 def _client(**env):
@@ -266,3 +267,47 @@ def test_unexpected_errors_are_not_swallowed(monkeypatch):
     _patch(monkeypatch, boom)
     with pytest.raises(RuntimeError):
         c.api_version()
+
+
+def test_redirect_is_refused_and_credentials_never_leave(monkeypatch):
+    """A 302 to another origin must not be followed: urllib would resend X-Tableau-Auth there."""
+    import http.server
+    import threading
+
+    leaked: dict[str, str] = {}
+
+    class Target(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            leaked.update(self.headers.items())
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"{}")
+
+        def log_message(self, *a):
+            pass
+
+    target = http.server.HTTPServer(("127.0.0.1", 0), Target)
+
+    class Redirector(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            self.send_response(302)
+            self.send_header("Location", f"http://127.0.0.1:{target.server_port}/steal")
+            self.end_headers()
+
+        def log_message(self, *a):
+            pass
+
+    redirector = http.server.HTTPServer(("127.0.0.1", 0), Redirector)
+    for srv in (target, redirector):
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        c = _client(TABLEAU_SERVER=f"http://localhost:{redirector.server_port}", TABLEAU_AUTH_TOKEN="SECRET")
+        c._endpoint = f"http://localhost:{redirector.server_port}/api/metadata/graphql"
+        with pytest.raises(TableauError, match="redirect") as exc:
+            c.graphql("{ x }")
+        assert f"127.0.0.1:{target.server_port}" in str(exc.value)  # names where it tried to send you
+        assert "SECRET" not in str(exc.value)
+        assert leaked == {}
+    finally:
+        for srv in (target, redirector):
+            srv.shutdown()

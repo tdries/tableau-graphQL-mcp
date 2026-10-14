@@ -77,6 +77,7 @@ All configuration is via environment variables (set them in your client's `env` 
 | `TABLEAU_TIMEOUT` | no | `60` | Per-request timeout (seconds). |
 | `TABLEAU_API_VERSION` | no | auto | REST API version; else read from `/api/serverinfo`. |
 | `TABLEAU_METADATA_PATH` | no | auto | Override the GraphQL path; else auto-detected. |
+| `TABLEAU_ALLOW_HTTP` | no | off | Set to `1` to allow a plain `http://` server on a trusted internal network. Otherwise only HTTPS (or loopback) is accepted, so credentials never travel unencrypted. |
 | `TABLEAU_LOG_LEVEL` | no | `INFO` | `DEBUG` logs each HTTP call (method + URL; never headers, bodies or secrets) to stderr. |
 | `TABLEAU_AUTH_TOKEN` | no | n/a | Advanced: a pre-obtained `X-Tableau-Auth` token (SSO tenants where PATs are disabled). |
 | `TABLEAU_COOKIE` | no | n/a | Advanced: a browser session cookie (SSO fallback). |
@@ -155,12 +156,15 @@ The server speaks MCP over **stdio** to the client and HTTPS to Tableau: it sign
 ## Security
 
 - **Read-only, enforced.** Only GraphQL queries: no writes, no shell. `graphql_query` rejects `mutation`/`subscription` operations, and the Metadata API is query-only regardless.
+- **Declared read-only.** Every tool carries the MCP `readOnlyHint` annotation, so clients can verify it without reading the code.
 - **Local and stdio-only.** No inbound network port is opened.
 - **Secrets from env only.** Never passed as tool arguments, never logged, never returned in output.
+- **Credentials go only to your Tableau host.** HTTPS is required, certificates are verified, and redirects are refused.
 - **Least privilege.** The PAT inherits your Tableau permissions; the API only returns content you can see.
-- Pin a version in production: `uvx tableau-graphql-mcp==0.1.0`.
+- **Verifiable releases.** Every GitHub release carries Sigstore signatures and a CycloneDX SBOM, and PyPI uploads use Trusted Publishing.
+- Pin a version in production: `uvx tableau-graphql-mcp==0.2.0`.
 
-See [SECURITY.md](SECURITY.md).
+See [SECURITY.md](SECURITY.md) for the threat model, data handling, disclosure policy and how to verify a release.
 
 ## Troubleshooting
 
@@ -189,13 +193,10 @@ uv run ruff check .                            # lint
 uv run ruff format --check .                   # format
 ```
 
-The same three gates (lint, format, tests with a 85% coverage floor) run in CI across
-Linux/macOS/Windows and Python 3.10 to 3.13. Coverage is reported to Codecov and the code is
-scanned by CodeQL on every push.
-
 The same gates run in CI (Linux/macOS/Windows, Python 3.10 to 3.13): `ruff check`,
 `ruff format --check`, `mypy --strict`, and `pytest` with a coverage floor. The package
 ships a PEP 561 `py.typed` marker, so importing it gives your type checker full types.
+CodeQL scans every push, and a weekly fuzzing job (`fuzz/`) attacks the read-only guard.
 
 Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
 

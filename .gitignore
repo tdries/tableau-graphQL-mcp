@@ -22,3 +22,8 @@ env/
 .idea/
 .vscode/
 *.swp
+
+# Test/coverage artifacts (also keeps them out of the sdist, which honours .gitignore)
+.coverage
+coverage.xml
+.hypothesis/

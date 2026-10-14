@@ -53,3 +53,11 @@ def test_tool_schema_matches_snapshot():
         "MCP public API changed. If intentional, regenerate tests/tool_contract.json "
         "(see the module docstring) and note it in the CHANGELOG."
     )
+
+
+def test_every_tool_is_annotated_read_only():
+    """MCP tool annotations let clients and marketplace scanners verify nothing here writes."""
+    for tool in server.mcp._tool_manager.list_tools():
+        assert tool.annotations is not None, tool.name
+        assert tool.annotations.readOnlyHint is True, tool.name
+        assert tool.annotations.destructiveHint is False, tool.name
