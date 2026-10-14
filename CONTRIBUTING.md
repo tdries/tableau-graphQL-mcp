@@ -7,7 +7,7 @@ that way are very welcome.
 
 ```bash
 git clone https://github.com/tdries/tableau-graphQL-mcp && cd tableau-graphQL-mcp
-uv sync                       # installs the package + dev tools
+uv sync --all-extras          # installs the package + dev tools
 uv run pytest                 # tests run offline, no Tableau needed
 uv run ruff check .
 uv run ruff format .
