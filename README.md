@@ -11,6 +11,8 @@
 <p align="center">
   <a href="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/ci.yml"><img src="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/codeql.yml"><img src="https://github.com/tdries/tableau-graphQL-mcp/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+  <a href="https://www.bestpractices.dev/projects/15497"><img src="https://www.bestpractices.dev/projects/15497/badge" alt="OpenSSF Best Practices"></a>
+  <a href="https://securityscorecards.dev/viewer/?uri=github.com/tdries/tableau-graphQL-mcp"><img src="https://api.securityscorecards.dev/projects/github.com/tdries/tableau-graphQL-mcp/badge" alt="OpenSSF Scorecard"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
   <a href="https://pypi.org/project/tableau-graphql-mcp/"><img src="https://img.shields.io/pypi/v/tableau-graphql-mcp.svg" alt="PyPI"></a>
   <img src="https://img.shields.io/pypi/pyversions/tableau-graphql-mcp.svg" alt="Python versions">
