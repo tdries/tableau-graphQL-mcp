@@ -7,6 +7,36 @@ API**: renaming a tool or a required argument is a MAJOR change.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-14
+
+### Security
+- Require `mcp>=1.28.1` (was `>=1.2.0`), the first SDK release with no known advisories:
+  GHSA-9h52-p55h-vw2f (CVE-2025-66416), GHSA-hvrp-rf83-w775, GHSA-jpw9-pfvf-9f58,
+  GHSA-vj7q-gjh5-988w and older ones. These affect the SDK's HTTP/WebSocket transports, not
+  this stdio server, but the old floor still allowed installing a vulnerable SDK.
+- Refresh `uv.lock`, which clears all open Dependabot alerts in the dev environment:
+  PyJWT 2.13.0 -> 2.15.1, anyio 4.14.1 -> 4.15.1, cryptography 49.0.0 -> 50.0.2.
+- Harden the read-only guard: a mutation separated from a preceding operation by a comma,
+  a BOM, a block string (`"""..."""`) or nothing at all (`query{a}mutation{b}`) slipped past
+  the old regex. `_is_write` now ignores everything inside selection sets and rejects the
+  `mutation`/`subscription` keyword anywhere at the document's top level (fails closed).
+
+### Fixed
+- Pin the MCP SDK below 2: mcp 2.0.0 removed `mcp.server.fastmcp`, so any fresh install
+  (e.g. `uvx tableau-graphql-mcp`) resolved 2.0.0 and crashed on import with
+  `ModuleNotFoundError`. Locked environments (`uv.lock`) were unaffected. Migration to the
+  2.x SDK API is tracked separately.
+- PAT sessions are re-signed-in proactively when Tableau's reported
+  `estimatedTimeToExpiration` runs out (60 s margin), instead of only after a 401/403.
+- A non-JSON Metadata API response (e.g. an HTML login or proxy page) now raises a clean
+  `TableauError` instead of a raw `JSONDecodeError`.
+- Best-effort calls (`/api/serverinfo`, HTTP error-body reads) catch only network and parse
+  errors instead of bare `Exception`, so real bugs surface.
+
+### Added
+- `TABLEAU_LOG_LEVEL` (default `INFO`). `DEBUG` logs every HTTP call as method + URL to
+  stderr; headers, bodies and secrets are never logged.
+
 ## [0.1.2] - 2026-07-13
 
 ### Changed
@@ -52,7 +82,8 @@ API**: renaming a tool or a required argument is a MAJOR change.
 - Embedded schema cheat-sheet and 28 curated question→GraphQL examples across 8 categories.
 - `uvx`-runnable console entry point; no runtime dependencies beyond the MCP SDK.
 
-[Unreleased]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/tdries/tableau-graphQL-mcp/releases/tag/v0.1.0

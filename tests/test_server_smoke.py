@@ -61,6 +61,22 @@ def test_write_guard():
     assert not _is_write("query { mutationRate }")  # field named like a write, not an operation
 
 
+def test_write_guard_no_separator_bypass():
+    from tableau_graphql_mcp.server import _is_write
+
+    # GraphQL treats commas and a BOM as whitespace; none of these may sneak a write past.
+    assert _is_write("query{a},mutation{b}")
+    assert _is_write("query{a}\n,mutation{b}")
+    assert _is_write("query{a}\ufeffmutation{b}")
+    assert _is_write("query{a}mutation{b}")
+    assert _is_write('"""doc string""" mutation { b }')
+    assert _is_write('query { a(s: "}") } mutation { b }')  # brace inside a string
+    assert _is_write('query { a(s: "#") } mutation { b }')  # '#' inside a string is not a comment
+    # still not writes:
+    assert not _is_write('query { a(s: """ } mutation { b } """) }')
+    assert not _is_write("query Q($mutation: Int) { a(n: $mutation) }")
+
+
 def test_graphql_query_rejects_writes():
     from tableau_graphql_mcp import server
     from tableau_graphql_mcp.client import TableauError

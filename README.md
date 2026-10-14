@@ -77,6 +77,7 @@ All configuration is via environment variables (set them in your client's `env` 
 | `TABLEAU_TIMEOUT` | no | `60` | Per-request timeout (seconds). |
 | `TABLEAU_API_VERSION` | no | auto | REST API version; else read from `/api/serverinfo`. |
 | `TABLEAU_METADATA_PATH` | no | auto | Override the GraphQL path; else auto-detected. |
+| `TABLEAU_LOG_LEVEL` | no | `INFO` | `DEBUG` logs each HTTP call (method + URL; never headers, bodies or secrets) to stderr. |
 | `TABLEAU_AUTH_TOKEN` | no | n/a | Advanced: a pre-obtained `X-Tableau-Auth` token (SSO tenants where PATs are disabled). |
 | `TABLEAU_COOKIE` | no | n/a | Advanced: a browser session cookie (SSO fallback). |
 

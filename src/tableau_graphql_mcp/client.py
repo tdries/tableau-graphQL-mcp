@@ -8,10 +8,12 @@ GraphQL endpoint path are auto-detected and cached.
 from __future__ import annotations
 
 import contextlib
+import http.client
 import json
 import logging
 import re
 import threading
+import time
 import urllib.error
 import urllib.request
 from typing import Any
@@ -19,6 +21,22 @@ from typing import Any
 from .config import Settings
 
 log = logging.getLogger("tableau-graphql-mcp")
+
+# What a best-effort HTTP call can actually raise: network/timeout (OSError, incl. URLError),
+# a bad response (HTTPException), non-JSON (ValueError), or an unexpected JSON shape.
+_SOFT_ERRORS = (OSError, http.client.HTTPException, ValueError, AttributeError)
+
+
+def _expiry_deadline(ttl: Any) -> float | None:
+    """Sign-in's ``estimatedTimeToExpiration`` ("HHH:MM:SS") -> a monotonic deadline, 60 s early.
+
+    None when Tableau doesn't report it (older servers); the 401/403 re-sign-in still covers that.
+    """
+    try:
+        h, m, s = (int(x) for x in str(ttl).split(":"))
+    except ValueError:
+        return None
+    return time.monotonic() + h * 3600 + m * 60 + s - 60
 
 
 class TableauError(RuntimeError):
@@ -30,6 +48,7 @@ class TableauClient:
         self.s = settings
         self._lock = threading.Lock()
         self._token: str | None = settings.auth_token
+        self._token_deadline: float | None = None  # only for PAT sessions that report a lifetime
         self._api_version: str | None = settings.api_version
         self._endpoint: str | None = None
 
@@ -41,6 +60,8 @@ class TableauClient:
         if data is not None:
             h["Content-Type"] = "application/json"
         h.update(headers or {})
+        # URL only: never headers (auth token/cookie) or body (PAT secret).
+        log.debug("%s %s", "GET" if data is None else "POST", url)
         req = urllib.request.Request(url, data=data, headers=h)
         with urllib.request.urlopen(req, timeout=self.s.timeout) as r:
             body = r.read()
@@ -50,7 +71,7 @@ class TableauClient:
     def _http_message(e: urllib.error.HTTPError) -> str:
         try:
             detail = e.read().decode("utf-8", "replace")[:400]
-        except Exception:
+        except (OSError, http.client.HTTPException):
             detail = ""
         return f"HTTP {e.code} {e.reason}. {detail}".strip()
 
@@ -61,7 +82,7 @@ class TableauClient:
         try:
             d = self._request(f"{self.s.server}/api/serverinfo")
             self._api_version = (d.get("serverInfo") or {}).get("restApiVersion") or "3.4"
-        except Exception as exc:  # noqa: BLE001: any failure -> safe floor
+        except _SOFT_ERRORS as exc:  # any network/parse failure -> safe floor
             log.warning("serverinfo failed (%s); defaulting REST API version to 3.4", exc)
             self._api_version = "3.4"
         return self._api_version
@@ -80,8 +101,11 @@ class TableauClient:
             return h
         return {"X-Tableau-Auth": self._get_token()}
 
+    def _token_expired(self) -> bool:
+        return self._token_deadline is not None and time.monotonic() >= self._token_deadline
+
     def _get_token(self, *, force: bool = False) -> str:
-        if self._token and not force:
+        if self._token and not force and not self._token_expired():
             return self._token
         s = self.s
         if not (s.pat_name and s.pat_secret):
@@ -98,6 +122,7 @@ class TableauClient:
             }
         ).encode()
         url = f"{s.server}/api/{self.api_version()}/auth/signin"
+        log.info("signing in to %s (PAT)", s.server)
         try:
             cred = self._request(url, data=body)["credentials"]
         except urllib.error.HTTPError as e:
@@ -111,6 +136,7 @@ class TableauClient:
         except (urllib.error.URLError, KeyError, ValueError) as e:
             raise TableauError(f"Sign-in failed: {e}") from None
         self._token = cred["token"]
+        self._token_deadline = _expiry_deadline(cred.get("estimatedTimeToExpiration"))
         return self._token
 
     def signout(self) -> None:
@@ -122,6 +148,7 @@ class TableauClient:
                     headers={"X-Tableau-Auth": self._token},
                 )
             self._token = None
+            self._token_deadline = None
 
     # ---------- endpoint detection ----------
     def _candidates(self) -> list[str]:
@@ -186,6 +213,8 @@ class TableauClient:
             raise TableauError(f"Metadata API error: {self._http_message(e)}") from None
         except urllib.error.URLError as e:
             raise TableauError(f"Metadata API unreachable: {e}") from None
+        except ValueError:  # e.g. an HTML login/proxy page instead of JSON
+            raise TableauError("Metadata API returned a non-JSON response.") from None
 
     # ---------- context ----------
     def server_info(self) -> dict[str, Any]:
@@ -199,8 +228,8 @@ class TableauClient:
             pv = si.get("productVersion")
             info["product_version"] = pv.get("value") if isinstance(pv, dict) else pv
             info["rest_api_version"] = si.get("restApiVersion")
-        except Exception:  # noqa: BLE001
-            pass
+        except _SOFT_ERRORS as exc:  # version info is optional context
+            log.debug("serverinfo unavailable: %s", exc)
         with self._lock:
             info["metadata_endpoint"] = self._resolve_endpoint()
         # Heuristic Catalog (Data Management) availability: can we read external assets?
