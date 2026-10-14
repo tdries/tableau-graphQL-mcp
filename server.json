@@ -7,13 +7,13 @@
     "url": "https://github.com/tdries/tableau-graphQL-mcp",
     "source": "github"
   },
-  "version": "0.1.2",
+  "version": "0.1.3",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "tableau-graphql-mcp",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "transport": {
         "type": "stdio"
       },
@@ -38,6 +38,11 @@
           "description": "Personal Access Token secret (the whole string)",
           "isRequired": true,
           "isSecret": true
+        },
+        {
+          "name": "TABLEAU_LOG_LEVEL",
+          "description": "DEBUG, INFO (default), WARNING or ERROR; DEBUG logs each HTTP call (method + URL) to stderr",
+          "isRequired": false
         }
       ]
     }

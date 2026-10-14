@@ -31,7 +31,10 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "mcp>=1.2.0",   # official MCP SDK (bundles FastMCP + pydantic). No other runtime deps: stdlib urllib for HTTP.
+    # official MCP SDK (bundles FastMCP + pydantic). No other runtime deps: stdlib urllib for HTTP.
+    # >=1.28.1: first release with no known advisories (GHSA-9h52-p55h-vw2f and later).
+    # <2 because mcp 2.0.0 removed mcp.server.fastmcp, which crashes the server on import.
+    "mcp>=1.28.1,<2",
 ]
 
 [project.optional-dependencies]

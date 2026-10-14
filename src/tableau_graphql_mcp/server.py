@@ -9,6 +9,7 @@ Works against any Tableau Server or Tableau Cloud site (see config.py for env va
 from __future__ import annotations
 
 import logging
+import os
 import re
 import sys
 from typing import Any
@@ -23,8 +24,12 @@ from .lineage import where_used as _where_used
 from .search import search_content as _search_content
 
 # stdio transport: logs MUST go to stderr; stdout carries the JSON-RPC protocol.
+# TABLEAU_LOG_LEVEL=DEBUG logs every HTTP call (method + URL; never headers, bodies or secrets).
+_LOG_LEVEL = os.environ.get("TABLEAU_LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO, stream=sys.stderr, format="%(asctime)s %(name)s %(levelname)s %(message)s"
+    level=_LOG_LEVEL if _LOG_LEVEL in ("DEBUG", "INFO", "WARNING", "ERROR") else "INFO",
+    stream=sys.stderr,
+    format="%(asctime)s %(name)s %(levelname)s %(message)s",
 )
 
 mcp = FastMCP("tableau-graphql")
@@ -40,19 +45,31 @@ def client() -> TableauClient:
     return _client
 
 
-_WRITE_OP = re.compile(r"(?:^|})\s*(mutation|subscription)\b", re.IGNORECASE)
+# Block strings, strings and comments in one left-to-right pass, so a '#' inside a string
+# (or a quote inside a comment) is handled the way the GraphQL lexer handles it.
+_LEXICAL_NOISE = re.compile(r'"""(?:\\"""|.)*?"""|"(?:[^"\\]|\\.)*"|#[^\n\r]*', re.DOTALL)
+_WRITE_KEYWORD = re.compile(r"(?<![$\w])(?:mutation|subscription)(?!\w)", re.IGNORECASE)
 
 
 def _is_write(query: str) -> bool:
     """True if the document contains a mutation/subscription operation.
 
-    Strips comments and string literals first so 'mutation' as a field value or
-    name doesn't trip it. The Metadata API is query-only; this makes read-only
-    true by construction rather than relying on the remote to reject writes.
+    Blanks out string literals and comments, then blanks out everything inside `{...}`
+    selection sets, and looks for the operation keyword anywhere in what is left (the
+    document's top level). Deliberately position-free: GraphQL treats commas and a BOM as
+    whitespace, so `query{a},mutation{b}` must be caught too. Fails closed: an operation or
+    fragment *named* "mutation" is rejected as well. The Metadata API is query-only; this
+    makes read-only true by construction rather than relying on the remote to reject writes.
     """
-    q = re.sub(r"#[^\n]*", "", query)
-    q = re.sub(r'"(?:[^"\\]|\\.)*"', '""', q)
-    return bool(_WRITE_OP.search(q))
+    top: list[str] = []
+    depth = 0
+    for ch in _LEXICAL_NOISE.sub(" ", query):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth = max(depth - 1, 0)
+        top.append(ch if depth == 0 and ch != "}" else " ")
+    return bool(_WRITE_KEYWORD.search("".join(top)))
 
 
 def _partial_results_warning(resp: dict[str, Any]) -> str | None:

@@ -2,6 +2,7 @@
 
 import io
 import json
+import time
 import urllib.error
 import urllib.request
 
@@ -185,3 +186,83 @@ def test_signout_clears_token(monkeypatch):
     _patch(monkeypatch, lambda req: _Resp({}))
     c.signout()
     assert c._token is None
+
+
+def _signin_counter(monkeypatch, ttl):
+    calls = {"signin": 0}
+
+    def h(req):
+        calls["signin"] += 1
+        return _Resp({"credentials": {"token": f"T{calls['signin']}", "estimatedTimeToExpiration": ttl}})
+
+    _patch(monkeypatch, h)
+    c = _client()
+    c._api_version = "3.4"
+    return c, calls
+
+
+def test_token_reused_until_reported_expiry(monkeypatch):
+    c, calls = _signin_counter(monkeypatch, "239:59:30")
+    assert c._get_token() == c._get_token() == "T1"
+    assert calls["signin"] == 1
+
+
+def test_token_refreshed_once_reported_expiry_passes(monkeypatch):
+    c, calls = _signin_counter(monkeypatch, "0:00:30")  # inside the 60 s safety margin
+    assert c._get_token() == "T1"
+    assert c._get_token() == "T2"
+    assert calls["signin"] == 2
+
+
+def test_token_without_reported_expiry_is_cached(monkeypatch):
+    c, calls = _signin_counter(monkeypatch, None)  # older servers: rely on 401 re-sign-in
+    c._get_token()
+    c._get_token()
+    assert calls["signin"] == 1
+    assert c._token_deadline is None
+
+
+def test_token_deadline_is_monotonic(monkeypatch):
+    c, _ = _signin_counter(monkeypatch, "1:00:00")
+    c._get_token()
+    assert c._token_deadline is not None
+    assert 3500 < c._token_deadline - time.monotonic() <= 3540
+
+
+def test_graphql_non_json_response_is_clean_error(monkeypatch):
+    c = _client(TABLEAU_AUTH_TOKEN="PRE")
+    c._endpoint = "https://h.com/api/metadata/graphql"
+
+    class _Html(_Resp):
+        def read(self):
+            return b"<html>login</html>"
+
+    _patch(monkeypatch, lambda req: _Html({}))
+    with pytest.raises(TableauError, match="non-JSON"):
+        c.graphql("{ x }")
+
+
+def test_server_info_tolerates_serverinfo_failure(monkeypatch):
+    c = _client(TABLEAU_AUTH_TOKEN="PRE")
+    c._endpoint = "https://h.com/api/metadata/graphql"
+
+    def h(req):
+        if "serverinfo" in req.full_url:
+            raise urllib.error.URLError("down")
+        return _Resp({"data": {"databaseTablesConnection": {"totalCount": 0}}})
+
+    _patch(monkeypatch, h)
+    info = c.server_info()
+    assert "product_version" not in info
+    assert info["catalog_available"] is False
+
+
+def test_unexpected_errors_are_not_swallowed(monkeypatch):
+    c = _client()
+
+    def boom(req):
+        raise RuntimeError("bug")
+
+    _patch(monkeypatch, boom)
+    with pytest.raises(RuntimeError):
+        c.api_version()
