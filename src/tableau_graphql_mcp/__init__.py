@@ -1,3 +1,3 @@
 """Tableau GraphQL MCP: ask any Tableau lineage question through the Metadata API."""
 
-__version__ = "0.1.3"
+__version__ = "0.2.0"

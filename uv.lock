@@ -8,7 +8,8 @@ resolution-markers = [
     "python_full_version == '3.14.*' and sys_platform != 'win32'",
     "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform == 'win32'",
     "python_full_version < '3.11' and sys_platform == 'win32'",
-    "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'linux'",
+    "(python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'linux' and sys_platform != 'win32') or (python_full_version == '3.11.*' and sys_platform == 'linux')",
     "python_full_version < '3.11' and sys_platform != 'win32'",
 ]
 
@@ -97,6 +98,16 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/2d/a8/0b26e4e4b16e3ddc9b77b6b42a29b0d6cf11a9342523ed7f0eaf4f1e1c45/ast_serialize-0.13.0-cp39-abi3-win32.whl", hash = "sha256:684e191dd41b08b0b92692a181380a70cd76e3b6469606a40aae1ca6dab39e7d", size = 1130669, upload-time = "2026-10-12T17:06:17.293Z" },
     { url = "https://files.pythonhosted.org/packages/5d/09/862169d471439eb11961692f867b09f34f0560977cafa042305705d2d0a4/ast_serialize-0.13.0-cp39-abi3-win_amd64.whl", hash = "sha256:8f672c8e6d3b9ef6e365a5543aee2012247d1d58d948ceddb75b33a6679609ca", size = 1167803, upload-time = "2026-10-12T17:06:18.918Z" },
     { url = "https://files.pythonhosted.org/packages/d6/85/c1c583ec96be412c4119a0ba4354c1e3519464036dd8d2909536661bed6a/ast_serialize-0.13.0-cp39-abi3-win_arm64.whl", hash = "sha256:8aff1682f9fa3e119a1cf8ef47504d38f7019b22b79e0f2b5c2135b9532d14db", size = 1138203, upload-time = "2026-10-12T17:06:20.466Z" },
+]
+
+[[package]]
+name = "atheris"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0a/88/fd6ad595dafa9c7ce56dbfcaff0c7244988dac3af86c771166c6516ccf6b/atheris-3.1.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:ec5e11f21a4c197fe91f7aea2b2de88e623c73a21fc07b105ac6329a1588457b", size = 36875908, upload-time = "2026-06-17T00:04:01.104Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/18/e19718c384fd7d801d0da7485407daef9af6194b6d8c8818175bec5efec6/atheris-3.1.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:f8a9f51ce8369026e8eb7b7174835e8c4c85a1a6db5d9add36c15100779d2a39", size = 36800563, upload-time = "2026-06-17T00:04:04.559Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/ff/ae7a5bfe99033e510bea4ed09934e636d93777317a48147369bc0dc2b71f/atheris-3.1.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:315a0b5c819852b1ffe1ca72efc389c7724881f2c33e4aacb8c6bcec49bd5011", size = 36772569, upload-time = "2026-06-17T00:04:07.702Z" },
 ]
 
 [[package]]
@@ -616,7 +627,8 @@ resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'win32'",
     "python_full_version == '3.14.*' and sys_platform != 'win32'",
     "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'linux'",
+    "(python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'linux' and sys_platform != 'win32') or (python_full_version == '3.11.*' and sys_platform == 'linux')",
 ]
 dependencies = [
     { name = "sortedcontainers", marker = "python_full_version >= '3.11'" },
@@ -1207,7 +1219,8 @@ resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'win32'",
     "python_full_version == '3.14.*' and sys_platform != 'win32'",
     "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'linux'",
+    "(python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'linux' and sys_platform != 'win32') or (python_full_version == '3.11.*' and sys_platform == 'linux')",
 ]
 dependencies = [
     { name = "pydantic", marker = "python_full_version >= '3.11'" },
@@ -1472,7 +1485,8 @@ resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'win32'",
     "python_full_version == '3.14.*' and sys_platform != 'win32'",
     "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'linux'",
+    "(python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'linux' and sys_platform != 'win32') or (python_full_version == '3.11.*' and sys_platform == 'linux')",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/68/3bd46b8a5e01d3c2ebdf9c5e9497912e3fe0cde02bac21a7130ca866e403/rpds_py-2026.9.1.tar.gz", hash = "sha256:4793ef7f78268b124b73fa933440f01d258bbae01de9fa53e9080c9ab0425a12", size = 63948, upload-time = "2026-10-04T16:32:36.469Z" }
 wheels = [
@@ -1680,7 +1694,8 @@ resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'win32'",
     "python_full_version == '3.14.*' and sys_platform != 'win32'",
     "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'linux'",
+    "(python_full_version >= '3.11' and python_full_version < '3.14' and sys_platform != 'linux' and sys_platform != 'win32') or (python_full_version == '3.11.*' and sys_platform == 'linux')",
 ]
 dependencies = [
     { name = "anyio", marker = "python_full_version >= '3.11'" },
@@ -1708,6 +1723,11 @@ dev = [
     { name = "ruff" },
 ]
 
+[package.dev-dependencies]
+fuzz = [
+    { name = "atheris", marker = "python_full_version >= '3.12' and sys_platform == 'linux'" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6" },
@@ -1718,6 +1738,9 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6" },
 ]
 provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+fuzz = [{ name = "atheris", marker = "python_full_version >= '3.12' and sys_platform == 'linux'", specifier = ">=3.1" }]
 
 [[package]]
 name = "tomli"

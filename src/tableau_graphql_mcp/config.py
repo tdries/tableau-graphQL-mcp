@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import os
+import urllib.parse
 from collections.abc import Mapping
 from dataclasses import dataclass
+
+_LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
 def normalize_server(url: str) -> str:
@@ -48,12 +51,20 @@ class Settings:
                 "https://tableau.company.com (Server) or "
                 "https://10ax.online.tableau.com (Cloud)."
             )
+        server = normalize_server(server)
+        allow_http = source.get("TABLEAU_ALLOW_HTTP", "").strip().lower() in ("1", "true", "yes")
+        parts = urllib.parse.urlsplit(server)
+        if parts.scheme == "http" and parts.hostname not in _LOOPBACK_HOSTS and not allow_http:
+            raise RuntimeError(
+                f"Refusing plain HTTP for {server}: your Tableau credentials would travel unencrypted. "
+                "Use https://, or set TABLEAU_ALLOW_HTTP=1 if this is a trusted internal network."
+            )
         try:
             timeout = float(source.get("TABLEAU_TIMEOUT", "60"))
         except ValueError:
             timeout = 60.0
         s = cls(
-            server=normalize_server(server),
+            server=server,
             site_content_url=source.get("TABLEAU_SITE_CONTENT_URL", "").strip(),
             pat_name=(source.get("TABLEAU_PAT_NAME") or None),
             pat_secret=(source.get("TABLEAU_PAT_SECRET") or None),

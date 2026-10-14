@@ -7,6 +7,32 @@ API**: renaming a tool or a required argument is a MAJOR change.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-14
+
+### Security
+- **Credentials can no longer follow a redirect to another host.** urllib followed HTTP
+  redirects and re-sent the `X-Tableau-Auth` header (or session cookie) to the new location,
+  even on a different host. A misconfigured proxy or a hostile network could collect the
+  session token. Redirects are now refused with an error naming the target.
+- **Plain HTTP is refused by default.** An `http://` `TABLEAU_SERVER` sent the PAT secret
+  unencrypted. It now fails at startup unless the host is loopback or `TABLEAU_ALLOW_HTTP=1`
+  is set. **Breaking** for servers reached over plain HTTP: set `TABLEAU_ALLOW_HTTP=1` or
+  switch to `https://`.
+- Every tool now declares MCP tool annotations (`readOnlyHint: true`,
+  `destructiveHint: false`), so clients and scanners can verify the server never writes.
+  The tool contract (names and arguments) is unchanged.
+- Releases are signed: each GitHub release carries the wheel and sdist, a CycloneDX SBOM,
+  and a Sigstore signature for each file. They are built once and the same files go to PyPI.
+- A fuzzer (atheris) now attacks the read-only guard in CI on every push and weekly.
+- Dependabot tracks `uv.lock` directly, groups updates, and waits 7 days before adopting a
+  new release. Security updates are not delayed.
+- `SECURITY.md` now covers supported versions, a disclosure timeline, the threat model
+  (including prompt injection through Tableau content), data handling, and release
+  verification.
+
+### Fixed
+- The sdist no longer ships local test artifacts (`.coverage`).
+
 ## [0.1.3] - 2026-10-14
 
 ### Security
@@ -82,7 +108,8 @@ API**: renaming a tool or a required argument is a MAJOR change.
 - Embedded schema cheat-sheet and 28 curated question→GraphQL examples across 8 categories.
 - `uvx`-runnable console entry point; no runtime dependencies beyond the MCP SDK.
 
-[Unreleased]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/tdries/tableau-graphQL-mcp/compare/v0.1.0...v0.1.1

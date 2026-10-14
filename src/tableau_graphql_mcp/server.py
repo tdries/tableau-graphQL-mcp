@@ -15,6 +15,7 @@ import sys
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 from .client import TableauClient, TableauError
 from .config import Settings
@@ -35,6 +36,11 @@ logging.basicConfig(
 mcp = FastMCP("tableau-graphql")
 
 _client: TableauClient | None = None
+
+# Every tool only reads. Declared as MCP tool annotations so clients and scanners can verify it
+# without reading the code. openWorldHint: the tool talks to your Tableau site (vs. local data).
+_READS_TABLEAU = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True)
+_LOCAL_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
 
 
 def client() -> TableauClient:
@@ -91,7 +97,7 @@ def _partial_results_warning(resp: dict[str, Any]) -> str | None:
     return None
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READS_TABLEAU)
 def graphql_query(query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
     """Run ANY read-only GraphQL query against the Tableau Metadata API. This is the
     general-purpose tool; use it for any lineage question. Returns {"data": ..., "errors": ...}.
@@ -134,7 +140,7 @@ def graphql_query(query: str, variables: dict[str, Any] | None = None) -> dict[s
     return resp
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READS_TABLEAU)
 def introspect_schema(type_name: str | None = None) -> dict[str, Any]:
     """Introspect the live Metadata API GraphQL schema (introspection is enabled).
 
@@ -157,7 +163,7 @@ def introspect_schema(type_name: str | None = None) -> dict[str, Any]:
     return client().graphql(q, {})
 
 
-@mcp.tool()
+@mcp.tool(annotations=_LOCAL_ONLY)
 def lineage_examples(category: str | None = None) -> dict[str, Any]:
     """Return a schema cheat-sheet and a library of curated lineage questions with their
     correct GraphQL queries (+ example variables). Read this before composing a `graphql_query`.
@@ -175,7 +181,7 @@ def lineage_examples(category: str | None = None) -> dict[str, Any]:
     return {"schema_cheatsheet": SCHEMA_CHEATSHEET, "categories": CATEGORIES, "examples": examples}
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READS_TABLEAU)
 def where_used(names: list[str]) -> dict[str, Any]:
     """Find which workbooks (and published datasources) USE the given names, the common
     'where is this used / impact analysis' question, resolved robustly.
@@ -196,7 +202,7 @@ def where_used(names: list[str]) -> dict[str, Any]:
     return _where_used(client(), names)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READS_TABLEAU)
 def impact_analysis(name: str) -> dict[str, Any]:
     """Full transitive (MULTI-HOP) downstream impact of a column, field, or table. Returns every
     field that directly OR indirectly depends on it, and all affected sheets, dashboards,
@@ -216,7 +222,7 @@ def impact_analysis(name: str) -> dict[str, Any]:
     return _impact_analysis(client(), name)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READS_TABLEAU)
 def search_content(term: str, types: list[str] | None = None) -> dict[str, Any]:
     """Find content whose NAME contains `term` (case-insensitive SUBSTRING). Use this when you
     only know part of a name, since every other tool and the Metadata API filter are exact-match.
@@ -233,7 +239,7 @@ def search_content(term: str, types: list[str] | None = None) -> dict[str, Any]:
     return _search_content(client(), term, types)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READS_TABLEAU)
 def server_info() -> dict[str, Any]:
     """Report the connected Tableau environment: server URL, site, product & REST API version,
     which Metadata API endpoint is in use, the auth method, and whether external-asset

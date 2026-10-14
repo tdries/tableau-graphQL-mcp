@@ -37,3 +37,28 @@ def test_missing_auth_raises():
 def test_cookie_auth_is_valid():
     s = Settings.from_env({"TABLEAU_SERVER": "https://h.com", "TABLEAU_COOKIE": "workgroup_session_id=x"})
     assert s.cookie == "workgroup_session_id=x"
+
+
+_PAT = {"TABLEAU_PAT_NAME": "n", "TABLEAU_PAT_SECRET": "s"}
+
+
+@pytest.mark.parametrize("server", ["http://tableau.company.com", "http://10.0.0.5:8000"])
+def test_plain_http_is_refused(server):
+    with pytest.raises(RuntimeError, match="TABLEAU_ALLOW_HTTP"):
+        Settings.from_env({"TABLEAU_SERVER": server, **_PAT})
+
+
+@pytest.mark.parametrize("server", ["http://localhost:8000", "http://127.0.0.1", "http://[::1]:8080"])
+def test_plain_http_allowed_on_loopback(server):
+    assert Settings.from_env({"TABLEAU_SERVER": server, **_PAT}).server == server
+
+
+def test_plain_http_allowed_with_explicit_opt_in():
+    s = Settings.from_env({"TABLEAU_SERVER": "http://tableau.intra", "TABLEAU_ALLOW_HTTP": "1", **_PAT})
+    assert s.server == "http://tableau.intra"
+
+
+def test_https_and_bare_hosts_unaffected():
+    assert Settings.from_env({"TABLEAU_SERVER": "tableau.company.com", **_PAT}).server == (
+        "https://tableau.company.com"
+    )

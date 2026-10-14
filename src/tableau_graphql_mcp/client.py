@@ -16,7 +16,8 @@ import threading
 import time
 import urllib.error
 import urllib.request
-from typing import Any
+from email.message import Message
+from typing import IO, Any
 
 from .config import Settings
 
@@ -25,6 +26,26 @@ log = logging.getLogger("tableau-graphql-mcp")
 # What a best-effort HTTP call can actually raise: network/timeout (OSError, incl. URLError),
 # a bad response (HTTPException), non-JSON (ValueError), or an unexpected JSON shape.
 _SOFT_ERRORS = (OSError, http.client.HTTPException, ValueError, AttributeError)
+
+
+class _RefuseRedirects(urllib.request.HTTPRedirectHandler):
+    """Never follow redirects: urllib would resend X-Tableau-Auth / Cookie to the new host,
+    even a different one. Credentials go to TABLEAU_SERVER and nowhere else."""
+
+    def redirect_request(
+        self, req: urllib.request.Request, fp: IO[bytes], code: int, msg: str, headers: Message, newurl: str
+    ) -> urllib.request.Request | None:
+        raise urllib.error.HTTPError(
+            req.full_url,
+            code,
+            f"redirect to {newurl} refused (credentials are only sent to TABLEAU_SERVER; "
+            "if that is your server's real address, set TABLEAU_SERVER to it)",
+            headers,
+            fp,
+        )
+
+
+_OPENER = urllib.request.build_opener(_RefuseRedirects)
 
 
 def _expiry_deadline(ttl: Any) -> float | None:
@@ -51,6 +72,8 @@ class TableauClient:
         self._token_deadline: float | None = None  # only for PAT sessions that report a lifetime
         self._api_version: str | None = settings.api_version
         self._endpoint: str | None = None
+        if settings.server.startswith("http://"):
+            log.warning("TABLEAU_SERVER uses plain HTTP: credentials and results travel unencrypted.")
 
     # ---------- low-level HTTP ----------
     def _request(
@@ -63,7 +86,7 @@ class TableauClient:
         # URL only: never headers (auth token/cookie) or body (PAT secret).
         log.debug("%s %s", "GET" if data is None else "POST", url)
         req = urllib.request.Request(url, data=data, headers=h)
-        with urllib.request.urlopen(req, timeout=self.s.timeout) as r:
+        with _OPENER.open(req, timeout=self.s.timeout) as r:
             body = r.read()
         return json.loads(body) if body else {}
 
