@@ -1,5 +1,8 @@
 <!-- mcp-name: io.github.tdries/tableau-graphql-mcp -->
 
+<!-- coffee -->
+☕ **Think I deserve a coffee for all the hard work I put into this? [Buy me one, you silly!](https://ko-fi.com/thank_you_so_much_i_love_you) 🙂**
+
 <p align="center">
   <img src="docs/images/banner.png" alt="tableau-graphql-mcp" width="880">
 </p>
@@ -217,3 +220,8 @@ Ideas and votes welcome in [Discussions](https://github.com/tdries/tableau-graph
 ## License
 
 [MIT](LICENSE) © Tim Dries. Built at [Biztory](https://www.biztory.com).
+
+---
+
+<!-- coffee -->
+☕ **Think I deserve a coffee for all the hard work I put into this? [Buy me one, you silly!](https://ko-fi.com/thank_you_so_much_i_love_you) 🙂**
